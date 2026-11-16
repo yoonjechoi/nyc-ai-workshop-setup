@@ -76,6 +76,10 @@
 - Claude 앱을 끄고(오른쪽 아래 ^ → Claude 오른쪽 클릭 → Quit) 다시 켜서 이 대화로 돌아오기
 - 돌아오면 너는 두 커넥터가 보이는지만 확인한다(생성은 하지 않는다).
 
+**예비 — 커넥터가 안 될 때만**(커넥터 연결이 실패하거나, 앱을 다시 켜도 안 보일 때. 설치 스크립트가 도구는 이미 깔아 둠)
+- 힉스필드: `higgsfield auth login` 을 실행하고 로그인 주소는 Aside 에서 연다. 캡차 · 인증 코드가 나오면 그 탭을 사람에게 맡긴다. 그다음 힉스필드 공식 스킬을 설치한다.
+- 일레븐랩스: Aside 에서 elevenlabs.io(무료 계정) → API Keys → 새 키 만들기. 키 값은 채팅 · 화면 캡처에 남기지 말고 복사(클립보드)만 한 뒤 PowerShell 에서 `claude mcp add elevenlabs -s user -e "ELEVENLABS_API_KEY=$(Get-Clipboard)" -- uvx elevenlabs-mcp` 로 등록하고 `Set-Clipboard -Value ' '` 로 클립보드를 비운다. 이 명령을 네가 실행할 수 없으면 사람에게 ▶ 를 눌러 달라고 한다.
+
 **표 보여 주기:** `powershell -ExecutionPolicy Bypass -File install-win.ps1 -Check` 결과 표를 보여 준다. 사이트마다 ✅ / ⏸ 로 사람이 할 일(어느 탭에서 무엇을)도 표로 보여 준다. ⏸ 가 있으면 사람이 하고 「다 했어」라고 할 때까지 기다린다. 이미 2단계 인증을 켠 계정, 캡차, Vercel 휴대폰 인증이 여기에 해당한다.
 
 **⏸ 사람 차례 — 휴대폰 (2단계가 도는 동안 해도 된다)** 아래 내용을 안내한다.
