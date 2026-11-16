@@ -496,7 +496,8 @@ if want 16; then begin 16 "바로가기 · 앱에서도 새 도구가 보이게"
   mkdir -p "$HOME/.local/bin"
   V="$WORKDIR/.venv-qwen-tts/bin/qwen-tts-demo"
   [ -x "$V" ] && ln -sf "$V" "$HOME/.local/bin/qwen-tts-demo"
-  GP="$HOME/.pixi/bin:$HOME/.npm-global/bin:$HOME/.bun/bin:$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+  # pixi 것이 먼저, 그다음 원래 쓰던 Homebrew(있으면) · 시스템 순서
+  GP="$HOME/.pixi/bin:$HOME/.npm-global/bin:$HOME/.bun/bin:$HOME/.local/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
   LA="$HOME/Library/LaunchAgents/com.nyc-ai-workshop.path.plist"
   mkdir -p "$HOME/Library/LaunchAgents"
   cat >"$LA" <<PLIST
