@@ -148,7 +148,7 @@ if ($Check) {
     $v = AppInstalled $a[1]; $L += $(if ($v) { "| $($a[0]) | ✅ 있음 | $v | |" } else { "| $($a[0]) | ❌ 없음 | - | |" })
   }
   $demo = Join-Path $WorkDir ".venv-qwen-tts\Scripts\qwen-tts-demo.exe"
-  $L += $(if (Test-Path $demo) { "| Qwen3-TTS | ✅ 있음 | | $WorkDir\.venv-qwen-tts |" } else { "| Qwen3-TTS | ⏸ 없음 | - | 빈 공간 15GB 이상일 때만 설치 |" })
+  $L += $(if (Test-Path $demo) { "| Qwen3-TTS | ✅ 있음 | | $WorkDir\.venv-qwen-tts |" } else { "| Qwen3-TTS | ⏸ 없음 | - | 빈 공간을 15GB 넘게 만든 뒤 -Only 16 |" })
   # 연결 · 로그인
   if (Has claude) {
     $r = RunTimed "claude mcp get aside"; $L += $(if ($r.Code -eq 0) { "| Aside MCP | ✅ 연결됨 | | |" } else { "| Aside MCP | ❌ 연결 안 됨 | | -Only 11 |" })
@@ -384,7 +384,7 @@ if (Want 16) { Begin 16 "Qwen3-TTS(목소리 만들기)"
   $demo = Join-Path $venv "Scripts\qwen-tts-demo.exe"
   $vpy  = Join-Path $venv "Scripts\python.exe"
   if ((Test-Path $demo) -and ((& $demo --help *>&1 | Out-String) -match "usage")) { Skip (& $vpy -c "import importlib.metadata as m;print(m.version('qwen-tts'))") }
-  elseif (-not $TtsOk -and $Only -ne "16") { Pass "용량이 모자라 뺌(시작할 때 ${Free0}GB, ${TtsFreeGB}GB 필요)" }
+  elseif (-not $TtsOk -and $Only -ne "16") { Pass "용량이 모자라 뺌(시작할 때 ${Free0}GB) — 빈 공간을 ${TtsFreeGB}GB 넘게 만든 뒤 -Only 16" }
   else {
     EnsureUv | Out-Null
     if (-not (Has sox)) { WingetInstall "ChrisBagwell.SoX" | Out-Null }
