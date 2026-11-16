@@ -12,7 +12,6 @@
 2. 설정 → Claude Code 에서 **권한 무시(bypass permissions)** 를 켭니다.
 3. 설정 → **Capabilities → Computer use** 를 켭니다(Turn on).
    - 「Grant macOS permissions」 창에서 Accessibility · Screen recording 의 **Request** 를 누르고, 시스템 설정 스위치를 켠 뒤 맥 비밀번호를 넣습니다. 「Quit & Reopen」이 나오면 **Reopen** 을 누릅니다.
-   - 같은 화면 「How Claude uses the apps you allow」 에서 **Full control** 을 고릅니다. 그러면 「Take over the screen?」 을 다시 묻지 않습니다.
 4. Code 탭에서 폴더 `~/workspace/nyc-ai-workshop` 를 만들어 고르고, Trust 를 누른 뒤 모드를 **Bypass permissions** 로 바꿉니다.
 5. 이 대화에 위의 한 줄을 보냅니다.
 
@@ -67,7 +66,7 @@
    - claude 터미널판 로그인
 4. 비밀번호 · 인증 코드 · 캡차 · 결제 화면이 나온 탭은 그대로 두고 다음으로 넘어간다.
 
-**⏸ 사람 차례 — Allow 창** 처음 다른 앱을 쓸 때 대화 안에 「Allow Claude to use 앱이름?」 이 뜬다. 사람에게 「대화 아래 창에서 **Allow for this session** 을 눌러 주세요」라고 미리 말해 둔다. (Full control 이 아니면 「Take over the screen?」 도 뜬다 — 같은 단추.)
+**⏸ 사람 차례 — Allow 창** 처음 다른 앱을 쓸 때 대화 안에 「Allow Claude to use 앱이름?」 이, 화면 전체를 쓸 때 「Take over the screen?」 이 뜬다. 사람에게 「대화 아래 주황색 'Needs your input' 이 보이면 **Allow for this session** 을 눌러 주세요」라고 미리 말해 둔다.
 
 **⏸ 사람 차례 — 커넥터 2개 (약 3분)** 아래 내용을 그대로 안내하고 「했어」를 기다린다.
 - Claude 앱 설정 → Connectors 에서 **Higgsfield** 와 **ElevenLabs** 를 Connect → 구글 로그인 → Allow
@@ -90,7 +89,7 @@
 - 휴대폰 텔레그램 설정 → 기기 → **데스크톱 기기 연결** 로 그 QR 을 스캔한다.
 
 그다음 아래 순서로 진행한다. 시작하기 전에 두 가지를 사람에게 말한다.
-- 「곧 「Allow Claude to use Telegram?」 창이 뜹니다. Allow for this session 을 눌러 주세요.」
+- 「곧 Allow 창이 2번 뜹니다(텔레그램 사용, 화면 전체 제어). Allow for this session 을 눌러 주세요.」
 - 「도는 동안 휴대폰으로 BotFather 와 대화하지 마세요.」
 
 1. Claude Code 공식 텔레그램 플러그인(claude-plugins-official 의 `telegram`)을 설치한다.
