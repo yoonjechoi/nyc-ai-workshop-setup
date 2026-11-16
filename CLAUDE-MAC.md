@@ -28,8 +28,8 @@
 - 생년월일은 **이 대화 안에서만** 쓰고 파일에 적지 않는다.
 - 토큰과 API 키는 채팅에 쓰지 않는다. 클립보드나 파일로만 옮긴다.
 - 터미널 명령은 사람에게 넘기지 말고 **네가 직접 실행**한다(claude 는 `~/.local/bin/claude`).
-- 가입 · 로그인 웹 화면은 Aside MCP(`aside repl`)로 다룬다. 로그인 주소는 Safari 가 아니라 Aside 에서 연다.
-  computer use 는 Aside 앱 설정 창, Aside 밖에 뜨는 창, 자동 클릭이 막힌 단추(GitHub Authorize, Vercel Allow Access 등)에만 쓴다(전체 화면 제어로 마우스를 움직여 누른다).
+- 가입 · 로그인 웹 화면은 처음부터 Aside MCP(`aside repl`)로 다룬다. 로그인 주소는 Safari 가 아니라 Aside 탭에서 연다.
+- Aside 로 안 되는 화면이 나오면 그때만 computer use(전체 화면 제어)로 누른다: Aside 앱 설정 창, Aside 밖에 뜨는 창, 눌러도 반응이 없는 단추(GitHub Authorize, Vercel Allow Access 등). 누른 뒤에는 다시 Aside MCP 로 돌아간다.
 - 각 단계가 끝나면 ✅ 한 줄로 알리고 다음 단계로 간다.
 
 ### 1단계 설치 (약 5분)
@@ -57,7 +57,7 @@
 「Claude 앱 왼쪽 위 **New** 로 새 대화를 열어 주세요. 폴더는 nyc-ai-workshop 그대로 두고, 아래 한 줄을 보내 주세요. 앱은 끄지 마세요.」
 `이 문서의 2단계부터 끝까지 해 줘: https://raw.githubusercontent.com/yoonjechoi/nyc-ai-workshop-setup/main/CLAUDE-MAC.md`
 
-### 2단계 가입 · 로그인 · 연결 (약 20분, 새 대화에서)
+### 2단계 가입 · 로그인 · 연결 (약 15분, 새 대화에서)
 먼저 이 대화에 `mcp__aside__` 로 시작하는 도구(`aside repl` 등)가 있는지 본다. 없으면 설치하던 대화일 수 있으니, 사람에게 New 로 새 대화를 열어 위 한 줄을 다시 보내 달라고 한다. 새 터미널 명령에도 1단계의 `export PATH=…;` 를 붙인다.
 시작할 때 **생년월일을 한 번만** 묻고, 가입 화면에서 생년월일이나 나이를 물으면 그 값을 넣는다. 수강생은 만 18세 이상이니 나이 때문에 멈추지 않는다.
 1. **Aside 연결 확인:** Aside → Settings → Models 에 Claude 가 있는지 본다. 없으면 + Connect → Claude → Connect → Authorize 를 누른다.
