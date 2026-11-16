@@ -152,6 +152,7 @@ if ($Check) {
   # 연결 · 로그인
   if (Has claude) {
     $r = RunTimed "claude mcp get aside"; $L += $(if ($r.Code -eq 0) { "| Aside MCP | ✅ 연결됨 | | |" } else { "| Aside MCP | ❌ 연결 안 됨 | | -Only 11 |" })
+    $r = RunTimed "claude mcp get elevenlabs"; $L += $(if ($r.Code -eq 0) { "| ElevenLabs MCP | ✅ 연결됨 | | |" } else { "| ElevenLabs MCP | ❌ 연결 안 됨 | | 문장 ② 의 일레븐랩스 줄을 다시 |" })
     $r = RunTimed "claude auth status"
     $L += $(if ($r.Out -match '"loggedIn"\s*:\s*true') { "| Claude Code 로그인 | ✅ 됨 | | |" } else { "| Claude Code 로그인 | ⏸ 안 됨 | | claude 를 열어 /login |" })
   }
