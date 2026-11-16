@@ -62,15 +62,20 @@
    3. 나머지는 Aside 새 탭에 한꺼번에 연다: 힉스필드 · 일레븐랩스 · 미드저니 · Suno · 캡컷(모두 구글로)
 3. **로그인**(각각 한 번만 시도한다. 주소는 Aside 에서 열고 허용 단추를 누른다)
    - `vercel login`
-   - `higgsfield auth login`(요금제 화면은 건너뛴다) + 힉스필드 공식 스킬 설치
    - `gh auth login`(git 이름 · 이메일을 GitHub 계정에 맞춘다)
    - claude 터미널판 로그인
+   - 힉스필드는 사람이 Claude 커넥터로 연결하니 터미널 로그인은 하지 않는다.
 4. **일레븐랩스:** 무료 계정 그대로(결제 · 업그레이드 안 함) 대시보드의 API Keys 에서 새 키(이름 `nyc-workshop`)를 만든다. 키 값은 채팅에 쓰지 말고 클립보드에서 바로 ElevenLabs 공식 MCP(`elevenlabs-mcp`, uvx 로 실행)에 user 범위로 연결한 뒤 클립보드를 비운다. 목소리 목록처럼 크레딧이 들지 않는 것으로 동작만 확인한다.
 5. 비밀번호 · 인증 코드 · 캡차 · 결제 화면이 나온 탭은 그대로 두고 다음으로 넘어간다.
 
 **⏸ 사람 차례 — Allow 창** 처음 다른 앱이나 화면 전체를 쓸 때 대화 안에 아래 두 창이 뜬다. 사람에게 「대화 아래 창에서 **Allow for this session** 을 눌러 주세요」라고 미리 말해 둔다.
 - 「Allow Claude to use 앱이름?」
 - 「Take over the screen?」
+
+**⏸ 사람 차례 — 힉스필드 커넥터 (약 2분)** 아래 내용을 그대로 안내하고 「했어」를 기다린다.
+- Claude 앱 왼쪽 아래 내 이름 → Settings → Connectors 에서 **Higgsfield** 를 Connect → 구글 로그인 → Allow
+- Claude 앱을 끄고(오른쪽 아래 ^ → Claude 오른쪽 클릭 → Quit) 다시 켜서 이 대화로 돌아오기
+- 돌아오면 너는 힉스필드 커넥터가 보이는지만 확인한다(생성은 하지 않는다).
 
 **표 보여 주기:** `powershell -ExecutionPolicy Bypass -File install-win.ps1 -Check` 결과 표를 보여 준다. 사이트마다 ✅ / ⏸ 로 사람이 할 일(어느 탭에서 무엇을)도 표로 보여 준다. ⏸ 가 있으면 사람이 하고 「다 했어」라고 할 때까지 기다린다. 이미 2단계 인증을 켠 계정, 캡차, Vercel 휴대폰 인증이 여기에 해당한다.
 

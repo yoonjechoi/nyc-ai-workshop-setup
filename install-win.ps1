@@ -175,7 +175,7 @@ if ($Check) {
     $r = RunTimed "higgsfield auth token"
     $has = ($r.Code -eq 0) -and ($r.Out.Length -ge 20) -and ($r.Out -notmatch '(?i)error|not (logged|authenticated)|login')
     $r = $null
-    $L += $(if ($has) { "| 힉스필드 로그인 | ✅ 됨 | | |" } else { "| 힉스필드 로그인 | ⏸ 안 됨 | | higgsfield auth login |" })
+    $L += $(if ($has) { "| 힉스필드 로그인 | ✅ 됨 | | |" } else { "| 힉스필드 | ⏸ 터미널 로그인 안 함 | | Claude 설정 → Connectors 의 Higgsfield 로 연결(터미널에서는 확인 못 함) |" })
   }
   $L += ""
   $L += "✅ 있음 · 됨 / ⏸ 사람이 할 일 남음 / ❌ 없음. 설치가 빠진 것은  powershell -ExecutionPolicy Bypass -File `"$PSCommandPath`" -Only <번호>"
