@@ -1,9 +1,13 @@
 #!/bin/bash
-# 뉴욕 AI 워크숍 — 맥 사전 설치 스크립트 (시험판, 2026-11-16)
+# 뉴욕 AI 워크숍 — 맥 사전 설치 스크립트 v2 (2026-11-16)
 #
 # 쓰는 법:  bash install-mac.sh            (전부)
 #           bash install-mac.sh --only 8    (8번만 다시)
 #           bash install-mac.sh --list      (단계 목록만 보기)
+#           bash install-mac.sh --check     (설치 · 로그인 상태 점검 표만. 아무것도 설치하지 않음)
+#
+# v2 에서 바뀐 것: --check 추가 · 14 힉스필드 스킬 · 15 작업 폴더 CLAUDE.md(Claude 에게 주는 규칙)
+#                  · 16 qwen-tts-demo 바로가기와 앱용 PATH · 안내 시간 「약 5분」 · 2번 표에 ffmpeg 버전
 #
 # 지키는 것
 # - Homebrew · 맥 개발자 도구(Xcode Command Line Tools)를 쓰지 않는다. 소스 빌드를 하지 않는다.
@@ -29,6 +33,7 @@ ONLY=""
 case "${1:-}" in
   --only) ONLY="${2:-}";;
   --list) LIST=1;;
+  --check) CHECK=1;;
 esac
 
 mkdir -p "$CACHE" "$WORKDIR"
@@ -54,14 +59,30 @@ took() { echo $(( $(date +%s) - STEP_T )); }
 want() { [ -z "$ONLY" ] || [ "$ONLY" = "$1" ]; }
 
 # 진짜 프로그램인지(맥 기본 껍데기가 아닌지) 본다. 껍데기를 실행하면 개발자 도구 창이 뜨므로 실행하지 않고 판단한다.
+# PATH 에 없어도 다른 방법(Homebrew · nvm · volta 등)으로 깐 흔한 자리를 찾아, 겹쳐 깔지 않는다.
+ALT_FOUND=()   # "명령|폴더"
+alt_dir() {
+  local c=$1 d
+  for d in /opt/homebrew/bin /usr/local/bin "$HOME/.volta/bin" "$HOME/.bun/bin" "$HOME/.local/bin" "$HOME/.pixi/bin" "$HOME/.npm-global/bin" "$HOME"/.nvm/versions/node/*/bin; do
+    [ -x "$d/$c" ] && { echo "$d"; return 0; }
+  done
+  return 1
+}
 has() {
-  local p; p=$(command -v "$1" 2>/dev/null) || return 1
+  local p d; p=$(command -v "$1" 2>/dev/null)
+  if [ -z "$p" ]; then
+    d=$(alt_dir "$1") || return 1
+    PATH="$d:$PATH"; export PATH
+    case " ${ALT_FOUND[*]} " in *" $1|$d "*) ;; *) ALT_FOUND+=("$1|$d");; esac
+    return 0
+  fi
   case "$p" in
     /usr/bin/git|/usr/bin/python3|/usr/bin/pip3|/usr/bin/make|/usr/bin/clang|/usr/bin/gcc|/usr/bin/cc)
       xcode-select -p >/dev/null 2>&1 || return 1;;
   esac
   return 0
 }
+alt_note() { local e; for e in "${ALT_FOUND[@]}"; do [ "${e%%|*}" = "$1" ] && { echo " ⚠️ PATH 밖(${e#*|})"; return; }; done; }
 ver() { "$@" 2>/dev/null | head -n1 | grep -oE '[0-9]+(\.[0-9]+)+' | head -n1; }
 
 # ───────────────────────── PATH ─────────────────────────
@@ -181,12 +202,72 @@ STEPS=(
   "11|텔레그램 앱"
   "12|캡컷 앱"
   "13|Qwen3-TTS(목소리 만들기)"
+  "14|힉스필드 스킬(Claude 가 쓰는 힉스필드 기능 묶음)"
+  "15|작업 폴더 규칙(CLAUDE.md)"
+  "16|바로가기 · 앱에서도 새 도구가 보이게"
 )
 if [ "${LIST:-0}" = 1 ]; then for s in "${STEPS[@]}"; do echo "${s%%|*}. ${s#*|}"; done; exit 0; fi
 
+# ───────────────────────── --check : 점검 표만 ─────────────────────────
+# 명령마다 시간 제한(멈춰 있는 로그인 확인이 있어도 끝까지 간다). perl 은 맥 기본(진짜 프로그램).
+tlimit() { local s=$1; shift; perl -e 'alarm shift; exec @ARGV' "$s" "$@"; }
+mask() { sed -E 's/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]+/<메일>/g'; }
+if [ "${CHECK:-0}" = 1 ]; then
+  C=(); cadd(){ C+=("$1|$2|$3"); }
+  st() { [ "$1" = "-" ] && echo "❌" || echo "✅"; }
+  for t in "git --version" "gh --version" "node --version" "python3 --version" "bun --version" "vercel --version" "higgsfield --version" "claude --version" "aside --version"; do
+    set -- $t
+    if has "$1"; then x=$(ver "$@"); x="${x:-있음}$(alt_note "$1")"; else x="-"; fi
+    cadd "$1" "$(st "$x")" "$x"
+  done
+  x=$(has ffmpeg && ffmpeg -version 2>/dev/null | head -n1 | awk '{print $3}' || echo -); cadd ffmpeg "$(st "$x")" "$x"
+  V="$WORKDIR/.venv-qwen-tts"
+  if [ -x "$V/bin/qwen-tts-demo" ] && tlimit 90 "$V/bin/qwen-tts-demo" --help >/dev/null 2>&1; then cadd "Qwen3-TTS" "✅" "qwen-tts-demo --help 됨"; else cadd "Qwen3-TTS" "❌" "qwen-tts-demo 가 안 됨"; fi
+  for a in Claude Aside Telegram CapCut; do
+    if app_installed "$a.app"; then cadd "$a 앱" "✅" "$(app_ver "$(app_path "$a.app")")"; else cadd "$a 앱" "❌" "없음"; fi
+  done
+  [ -d "$HOME/.claude/skills/higgsfield-generate" ] && cadd "힉스필드 스킬" "✅" "$(ls -d "$HOME"/.claude/skills/higgsfield-* 2>/dev/null | wc -l | tr -d ' ')개" || cadd "힉스필드 스킬" "❌" "없음"
+  L=(); ladd(){ L+=("$1|$2|$3"); }
+  # vercel whoami 는 로그아웃이어도 종료 코드 0 → 글자로 판단
+  if has vercel; then x=$(tlimit 25 vercel whoami 2>&1 | grep -v '^Vercel CLI' | tail -n1 | mask)
+    case "$x" in ""|*[Ll]ogged\ out*|*[Ll]og\ in*|*[Nn]o\ existing*|*[Ee]rror*|*credentials*) ladd Vercel "❌" "로그인 안 됨 → vercel login";; *) ladd Vercel "✅" "$x";; esac
+  else ladd Vercel "-" "vercel 없음"; fi
+  if has gh; then if tlimit 20 gh auth status >/dev/null 2>&1; then ladd GitHub "✅" "$(tlimit 20 gh api user --jq .login 2>/dev/null)"; else ladd GitHub "❌" "로그인 안 됨 → gh auth login"; fi; else ladd GitHub "-" "gh 없음"; fi
+  if has git; then gn=$(git config --global user.name 2>/dev/null); ge=$(git config --global user.email 2>/dev/null)
+    [ -n "$gn" ] && [ -n "$ge" ] && ladd "git 이름 · 메일" "✅" "$gn · $(echo "$ge" | mask)" || ladd "git 이름 · 메일" "❌" "git config --global user.name / user.email"
+  fi
+  # 힉스필드: 상태 명령이 있으면 그걸, 없으면 토큰을 받을 수 있는지만(토큰 값은 버린다)
+  if has higgsfield; then x=$(tlimit 25 higgsfield account status 2>/dev/null | head -n1 | mask)
+    case "$x" in *credit*|*plan*) ladd 힉스필드 "✅" "$x";;
+      *) if tlimit 25 higgsfield auth token >/dev/null 2>&1; then ladd 힉스필드 "✅" "로그인됨"; else ladd 힉스필드 "❌" "로그인 안 됨 → higgsfield auth login"; fi;; esac
+  else ladd 힉스필드 "-" "higgsfield 없음"; fi
+  if has claude; then if tlimit 20 claude auth status 2>/dev/null | grep -q '"loggedIn": *true'; then ladd "Claude Code 터미널판" "✅" "$(tlimit 20 claude auth status 2>/dev/null | grep -o '"subscriptionType": *"[a-z]*"' | grep -o '"[a-z]*"$' | tr -d '"')"; else ladd "Claude Code 터미널판" "❌" "로그인 안 됨 → claude 실행 후 /login"; fi; else ladd "Claude Code 터미널판" "-" "claude 없음"; fi
+  # Aside: 로그인하면 프로필 이름이 내 이름(「홍길동」 · 「홍길동 (Work)」)으로 바뀐다. 로그인 전에는 「Work」 같은 기본 이름.
+  #        로그인 상태 명령이 따로 없어 이걸로 본다.
+  if has aside; then x=$(tlimit 20 aside host profiles 2>/dev/null | awk -F'\t' 'NR>1 && $3=="connected" && $2 !~ /^(Work|Personal|Default|Profile[ 0-9]*)$/{n++} END{print n+0}')
+    [ "${x:-0}" -gt 0 ] && ladd "Aside 로그인" "✅" "로그인된 프로필 ${x}개" || ladd "Aside 로그인" "❌" "Aside 앱에서 Sign in with Google(앱이 꺼져 있으면 켜고 다시 확인)"
+  else ladd "Aside 로그인" "-" "aside 없음"; fi
+  if has claude; then
+    tlimit 20 claude mcp get aside >/dev/null 2>&1 && ladd "Aside MCP" "✅" "Claude 에 연결됨" || ladd "Aside MCP" "❌" "bash install-mac.sh --only 8"
+    tlimit 20 claude mcp get elevenlabs >/dev/null 2>&1 && ladd "ElevenLabs MCP" "✅" "Claude 에 연결됨" || ladd "ElevenLabs MCP" "⏸" "연결 안 함(필요할 때만)"
+  fi
+  {
+    echo ""
+    echo "════════════════ 설치 · 로그인 점검 ($(date '+%m-%d %H:%M')) ════════════════"
+    echo "| 설치 | 결과 | 버전 · 메모 |"; echo "|---|---|---|"
+    for r in "${C[@]}"; do IFS='|' read -r a b c <<<"$r"; echo "| $a | $b | $c |"; done
+    echo ""
+    echo "| 로그인 · 연결 | 결과 | 계정 · 메모 |"; echo "|---|---|---|"
+    for r in "${L[@]}"; do IFS='|' read -r a b c <<<"$r"; echo "| $a | $b | $c |"; done
+    echo ""
+    echo "남은 용량: $(free_gb)GB"
+  } | tee "$HOME/nyc-check-result.txt"
+  exit 0
+fi
+
 say "════════════════════════════════════════"
 say " 뉴욕 AI 워크숍 설치를 시작합니다 ($(date '+%H:%M'))"
-say " 비밀번호를 묻지 않습니다. 10~15분쯤 걸립니다."
+say " 비밀번호를 묻지 않습니다. 약 5분 걸립니다(인터넷이 느리면 더)."
 say "════════════════════════════════════════"
 
 # ── 0. 먼저 확인: macOS 버전 · 남은 용량 · 인터넷
@@ -258,7 +339,7 @@ if want 2; then begin 2 "Git · GitHub CLI · ffmpeg · Node.js · Python"
     say "   받는 것: ${NEED[*]}  (미리 만든 것만 받습니다)"
     logc "$HOME/.pixi/bin/pixi" global install "${NEED[@]}"
     MISS=(); for c in git gh ffmpeg node python3; do has "$c" || MISS+=("$c"); done
-    if [ ${#MISS[@]} -eq 0 ]; then ok x "" "git $(ver git --version) · gh $(ver gh --version) · node $(ver node --version) · python $(ver python3 --version)" "$(took)"; else bad x "안 깔린 것: ${MISS[*]}" "$(took)"; fi
+    if [ ${#MISS[@]} -eq 0 ]; then ok x "" "git $(ver git --version) · gh $(ver gh --version) · ffmpeg $(ffmpeg -version 2>/dev/null | head -n1 | awk '{print $3}') · node $(ver node --version) · python $(ver python3 --version)" "$(took)"; else bad x "안 깔린 것: ${MISS[*]}" "$(took)"; fi
   fi
   # 버전 줄은 표에서 따로 보여 준다
 fi
@@ -375,8 +456,75 @@ if want 13; then begin 13 "Qwen3-TTS(목소리 만들기)"
   fi
 fi
 
+# ── 14. 힉스필드 스킬 (로그인 없이 설치 가능. Claude 가 힉스필드를 쓸 때 읽는 기능 묶음)
+if want 14; then begin 14 "힉스필드 스킬(Claude 가 쓰는 힉스필드 기능 묶음)"
+  if [ -d "$HOME/.claude/skills/higgsfield-generate" ]; then skip x "$(ls -d "$HOME"/.claude/skills/higgsfield-* 2>/dev/null | wc -l | tr -d ' ')개"
+  elif ! has npx; then pass x "Node.js 가 없어서(2번 먼저)"
+  else
+    (cd "$HOME" && logc npx -y skills add higgsfield-ai/skills -g -a claude-code -s '*' -y)
+    if [ -d "$HOME/.claude/skills/higgsfield-generate" ]; then ok x "" "$(ls -d "$HOME"/.claude/skills/higgsfield-* 2>/dev/null | wc -l | tr -d ' ')개" "$(took)"; else bad x "스킬 폴더가 안 보임" "$(took)"; fi
+  fi
+fi
+
+# ── 15. 작업 폴더 규칙(CLAUDE.md) — 이 폴더에서 일하는 Claude 가 매번 읽는다. 생년월일 같은 개인정보는 적지 않는다.
+if want 15; then begin 15 "작업 폴더 규칙(CLAUDE.md)"
+  CM="$WORKDIR/CLAUDE.md"
+  if grep -q '>>> nyc-ai-workshop 규칙 >>>' "$CM" 2>/dev/null; then skip x "규칙 있음"
+  else
+    cat >>"$CM" <<'RULES'
+
+<!-- >>> nyc-ai-workshop 규칙 >>> (설치 스크립트가 넣음. 이 사이는 다시 돌리면 그대로 둔다) -->
+# 뉴욕 AI 워크숍 작업 폴더 규칙
+- 사용자는 컴퓨터 초보다. 처음부터 끝까지 한국어로, 쉬운 말로, 짧게 알려 준다.
+- 웹 화면은 Aside(MCP)로 한다. 로그인 주소(vercel login · higgsfield auth login · gh auth login · claude 로그인 등)는 Safari 가 아니라 Aside 에서 연다.
+- 자동 클릭이 막힌 단추(GitHub Authorize, Vercel Allow Access 같은 것)와 Aside 밖에 뜬 창은 computer use 전체 화면 제어로 마우스를 움직여 직접 누른다.
+- 비밀번호 · 인증 코드 · 캡차 · 결제 화면은 손대지 않는다. 그 탭은 그대로 두고 다음으로 넘어간 뒤, 마지막에 「어느 탭에서 무엇을」 한 줄로 알려 준다.
+- vercel login 같은 로그인은 한 번만 시도한다(여러 번 하면 메일 인증 코드를 요구한다).
+- 맥 개발자 도구 · Homebrew · 관리자 비밀번호(sudo) · 소스 빌드를 쓰지 않는다. /usr/bin/git · /usr/bin/python3 는 부르지 않는다(개발자 도구 설치 창이 뜬다).
+- 생년월일 · 비밀번호 · API 키 같은 개인정보는 파일이나 채팅에 적지 않는다. 생년월일은 대화 안에서만 쓴다.
+- 설치 · 로그인 상태가 궁금하면 bash install-mac.sh --check 를 돌린다.
+<!-- <<< nyc-ai-workshop 규칙 <<< -->
+RULES
+    grep -q '>>> nyc-ai-workshop 규칙 >>>' "$CM" && ok x "" "$CM" "$(took)" || bad x "CLAUDE.md 를 못 씀" "$(took)"
+  fi
+fi
+
+# ── 16. 바로가기 · 앱에서도 새 도구가 보이게
+#  - qwen-tts-demo 를 가상환경을 켜지 않아도 쓰게 ~/.local/bin 에 바로가기
+#  - 독 · Spotlight 로 연 앱도 pixi 의 git · python 을 먼저 보게(로그인할 때마다 적용, 비밀번호 없음)
+if want 16; then begin 16 "바로가기 · 앱에서도 새 도구가 보이게"
+  mkdir -p "$HOME/.local/bin"
+  V="$WORKDIR/.venv-qwen-tts/bin/qwen-tts-demo"
+  [ -x "$V" ] && ln -sf "$V" "$HOME/.local/bin/qwen-tts-demo"
+  GP="$HOME/.pixi/bin:$HOME/.npm-global/bin:$HOME/.bun/bin:$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+  LA="$HOME/Library/LaunchAgents/com.nyc-ai-workshop.path.plist"
+  mkdir -p "$HOME/Library/LaunchAgents"
+  cat >"$LA" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>com.nyc-ai-workshop.path</string>
+  <key>ProgramArguments</key><array><string>/bin/launchctl</string><string>setenv</string><string>PATH</string><string>$GP</string></array>
+  <key>RunAtLoad</key><true/>
+</dict></plist>
+PLIST
+  logc /bin/launchctl setenv PATH "$GP"
+  M=""; [ -L "$HOME/.local/bin/qwen-tts-demo" ] && M="qwen-tts-demo 바로가기 · "
+  [ -f "$LA" ] && ok x "" "${M}앱 PATH 설정" "$(took)" || bad x "설정 파일을 못 씀" "$(took)"
+fi
+
 [ -n "${PREFETCH_PID:-}" ] && wait "$PREFETCH_PID" 2>/dev/null
 rm -rf "$CACHE"/*.tmp "$CACHE"/mnt.* 2>/dev/null
+[ "$FAILED" -eq 0 ] && rm -rf "$CACHE" 2>/dev/null   # 받은 설치 파일 정리(용량)
+
+# 다른 방법으로 깔려 있던 도구(PATH 밖)는 새로 깔지 않고, 그 폴더를 PATH 에 더해 다음부터 보이게 한다
+if [ ${#ALT_FOUND[@]} -gt 0 ]; then
+  ADD=""; for e in "${ALT_FOUND[@]}"; do d="${e#*|}"; case ":$ADD:" in *":$d:"*) ;; *) ADD="${ADD:+$ADD:}$d";; esac; done
+  for f in "$HOME/.zshenv" "$HOME/.zprofile" "$HOME/.bash_profile"; do
+    grep -q '>>> nyc-ai-workshop-found >>>' "$f" 2>/dev/null || printf '\n# >>> nyc-ai-workshop-found >>>\nexport PATH="$PATH:%s"\n# <<< nyc-ai-workshop-found <<<\n' "$ADD" >>"$f"
+  done
+  say ""; say "   ⚠️  PATH 밖에 이미 깔려 있던 것을 그대로 씁니다: $(for e in "${ALT_FOUND[@]}"; do printf '%s ' "${e%%|*}"; done)"
+fi
 
 # ───────────────────────── 점검 표 ─────────────────────────
 v() { has "$1" && ver "$@" || echo "-"; }
@@ -402,7 +550,8 @@ v() { has "$1" && ver "$@" || echo "-"; }
     echo "❌ 실패 ${FAILED}개. 자세한 기록: $LOG"
     echo "   고친 뒤 실패한 번호만 다시:  bash $0 --only <번호>"
   fi
-  echo "다음: Claude 앱을 완전히 끄고(⌘+Q) 다시 켜 주세요. 그래야 새로 깐 도구들이 보입니다."
+  echo "다음: Claude 앱을 완전히 끄고(Claude 메뉴 → Quit) 다시 켠 뒤, 왼쪽 목록에서 같은 대화로 돌아오세요. 그래야 새로 깐 도구들이 보입니다."
+  echo "설치 · 로그인 상태는 언제든:  bash install-mac.sh --check"
   app_installed CapCut.app && echo "캡컷은 응용 프로그램 폴더에서 직접 한 번 열어 보세요(처음 열 때 약관 동의 창이 나옵니다)."
 } | tee "$RESULT" | tee -a "$LOG"
 
