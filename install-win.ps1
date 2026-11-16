@@ -28,6 +28,11 @@ $Cache     = Join-Path $env:TEMP "nyc-install"
 $MinFreeGB = if ($env:NYC_MIN_FREE_GB) { [int]$env:NYC_MIN_FREE_GB } else { 10 }
 $TtsFreeGB = if ($env:NYC_TTS_FREE_GB) { [int]$env:NYC_TTS_FREE_GB } else { 15 }
 New-Item -ItemType Directory -Force -Path $WorkDir, $Cache | Out-Null
+# 윈도우 Claude 앱(MSIX)이 띄운 프로세스는 AppData 쓰기가 앱 전용 칸으로 옮겨진다(가상화).
+# 그래서 정션 · 파이썬 같은 「경로로 가리키는 것」은 AppData 밖(내 폴더)에 둔다. (2026-11-17 시험에서 Aside CLI · Qwen3-TTS 실패)
+$AsideCliDir = Join-Path $HOME ".aside-cli"
+$env:UV_PYTHON_INSTALL_DIR = Join-Path $HOME ".uv\python"
+$env:UV_CACHE_DIR          = Join-Path $HOME ".uv\cache"
 $T0 = Get-Date
 $Rows = New-Object System.Collections.ArrayList
 $script:Failed = 0
@@ -44,14 +49,14 @@ function Secs($s) { $s = [int]$s; if ($s -ge 60) { "{0}분 {1}초" -f [math]::Fl
 function FreeGB { [math]::Floor((Get-PSDrive -Name ($HOME.Substring(0,1))).Free / 1GB) }
 function Refresh-Path {
   $m = [Environment]::GetEnvironmentVariable("Path","Machine"); $u = [Environment]::GetEnvironmentVariable("Path","User")
-  $env:Path = "$m;$u;$HOME\.bun\bin;$HOME\.local\bin;$env:APPDATA\npm;$env:LOCALAPPDATA\Aside\CLI\current;$env:LOCALAPPDATA\Microsoft\WinGet\Links;$env:LOCALAPPDATA\Microsoft\WindowsApps"
+  $env:Path = "$m;$u;$HOME\.bun\bin;$HOME\.local\bin;$env:APPDATA\npm;$AsideCliDir\current;$env:LOCALAPPDATA\Aside\CLI\current;$env:LOCALAPPDATA\Microsoft\WinGet\Links;$env:LOCALAPPDATA\Microsoft\WindowsApps"
 }
 # 명령이 PATH 에 안 잡혀도 흔한 설치 위치를 한 번 더 찾는다(다른 방법으로 깐 것을 놓치거나 겹쳐 깔지 않게)
 $ExtraDirs = @(
   "$env:ProgramFiles\Git\cmd", "$env:LOCALAPPDATA\Programs\Git\cmd", "$env:ProgramFiles\GitHub CLI",
   "$env:ProgramFiles\nodejs", "$env:LOCALAPPDATA\Volta\bin", $env:NVM_SYMLINK,
   "$env:LOCALAPPDATA\Programs\Python\Python3*", "$env:ProgramFiles\Python3*",
-  "$env:APPDATA\npm", "$HOME\.bun\bin", "$HOME\.local\bin", "$env:LOCALAPPDATA\Aside\CLI\current",
+  "$env:APPDATA\npm", "$HOME\.bun\bin", "$HOME\.local\bin", "$HOME\.aside-cli\current", "$env:LOCALAPPDATA\Aside\CLI\current",
   "$env:LOCALAPPDATA\Microsoft\WinGet\Links", "$HOME\scoop\shims", "$env:ProgramData\chocolatey\bin", "$HOME\.cargo\bin"
 )
 $script:Elsewhere = @{}
@@ -278,7 +283,8 @@ if (Want 6) { Begin 6 "Aside CLI"
     # Aside 공식 설치 파일은 「파일로 받아서」 실행해야 한다(서명 확인 때문에 irm | iex 는 거절)
     $ai = Join-Path $Cache "aside-install.ps1"
     try { Invoke-WebRequest -UseBasicParsing https://releases.aside.com/install.ps1 -OutFile $ai } catch { Add-Content $Log "$_" -Encoding UTF8 }
-    LogRun "& '$ai'" | Out-Null; Remove-Item $ai -ErrorAction SilentlyContinue; Refresh-Path
+    # 기본 위치(AppData)는 Claude 앱 안에서 정션이 깨져 실패하므로 내 폴더에 설치
+    LogRun "& '$ai' -InstallDirectory '$AsideCliDir'" | Out-Null; Remove-Item $ai -ErrorAction SilentlyContinue; Refresh-Path
     if (Has aside) { Ok (Ver aside) } else { Bad "aside 명령이 안 보임" }
   }
 }
