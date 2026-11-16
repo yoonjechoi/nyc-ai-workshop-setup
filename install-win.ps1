@@ -3,6 +3,7 @@
 # 쓰는 법:  powershell -ExecutionPolicy Bypass -File install-win.ps1            (전부)
 #           powershell -ExecutionPolicy Bypass -File install-win.ps1 -Only 8    (8번만 다시)
 #           powershell -ExecutionPolicy Bypass -File install-win.ps1 -List      (단계 목록만)
+#           powershell -ExecutionPolicy Bypass -File install-win.ps1 -Check     (설치는 안 하고 버전 · 로그인 상태 점검 표만)
 #
 # 지키는 것
 # - winget(윈도우 기본 앱 설치 관리자)으로 미리 만든 설치 파일만 쓴다. 소스 빌드를 하지 않는다.
@@ -13,7 +14,7 @@
 # 남기는 것: 화면에는 단계마다 ✅ · ⏭ · ❌, 끝에 점검 표.
 #            자세한 기록 = %USERPROFILE%\nyc-install.log , 점검 표 = %USERPROFILE%\nyc-install-result.txt
 
-param([string]$Only = "", [switch]$List)
+param([string]$Only = "", [switch]$List, [switch]$Check)
 
 $ErrorActionPreference = "Continue"
 $ProgressPreference = "SilentlyContinue"
@@ -45,10 +46,51 @@ function Refresh-Path {
   $m = [Environment]::GetEnvironmentVariable("Path","Machine"); $u = [Environment]::GetEnvironmentVariable("Path","User")
   $env:Path = "$m;$u;$HOME\.bun\bin;$HOME\.local\bin;$env:APPDATA\npm;$env:LOCALAPPDATA\Aside\CLI\current;$env:LOCALAPPDATA\Microsoft\WinGet\Links;$env:LOCALAPPDATA\Microsoft\WindowsApps"
 }
-function Has($c) { [bool](Get-Command $c -ErrorAction SilentlyContinue) }
+# 명령이 PATH 에 안 잡혀도 흔한 설치 위치를 한 번 더 찾는다(다른 방법으로 깐 것을 놓치거나 겹쳐 깔지 않게)
+$ExtraDirs = @(
+  "$env:ProgramFiles\Git\cmd", "$env:LOCALAPPDATA\Programs\Git\cmd", "$env:ProgramFiles\GitHub CLI",
+  "$env:ProgramFiles\nodejs", "$env:LOCALAPPDATA\Volta\bin", $env:NVM_SYMLINK,
+  "$env:LOCALAPPDATA\Programs\Python\Python3*", "$env:ProgramFiles\Python3*",
+  "$env:APPDATA\npm", "$HOME\.bun\bin", "$HOME\.local\bin", "$env:LOCALAPPDATA\Aside\CLI\current",
+  "$env:LOCALAPPDATA\Microsoft\WinGet\Links", "$HOME\scoop\shims", "$env:ProgramData\chocolatey\bin", "$HOME\.cargo\bin"
+)
+$script:Elsewhere = @{}
+function FindElsewhere($c) {
+  foreach ($d in $ExtraDirs) {
+    if (-not $d) { continue }
+    foreach ($dd in @(Resolve-Path $d -ErrorAction SilentlyContinue | Sort-Object Path -Descending)) {
+      foreach ($ext in ".exe", ".cmd", ".bat") { $p = Join-Path $dd.Path "$c$ext"; if (Test-Path $p) { return $p } }
+    }
+  }
+  $wp = "$env:LOCALAPPDATA\Microsoft\WinGet\Packages"   # winget 이 받아 둔 폴더(링크가 없을 때)
+  if (Test-Path $wp) { $hit = Get-ChildItem $wp -Recurse -Depth 3 -Filter "$c.exe" -ErrorAction SilentlyContinue | Select-Object -First 1; if ($hit) { return $hit.FullName } }
+  return $null
+}
+# 진짜 명령의 경로(Microsoft Store 로 보내는 WindowsApps 가짜 python 은 뺀다). PATH 밖에서 찾으면 이번 실행에만 PATH 에 더한다
+function RealCmd($c) {
+  $g = Get-Command $c -All -ErrorAction SilentlyContinue | Where-Object { $_.Source -and $_.Source -notlike "*\WindowsApps\*" } | Select-Object -First 1
+  if ($g) { return $g.Source }
+  $p = FindElsewhere $c
+  if ($p) {
+    $dir = Split-Path $p; $env:Path = "$dir;$env:Path"; $script:Elsewhere[$c] = $dir
+    Add-Content -Path $Log -Value "명령 $c 은(는) PATH 밖 $dir 에 있음 → 이번 실행에서만 PATH 에 더함" -Encoding UTF8
+    return $p
+  }
+  return $null
+}
+function Has($c) { [bool](RealCmd $c) }
 function Ver($c) {
   $flag = if ($c -eq "ffmpeg") { "-version" } else { "--version" }
-  try { $o = & $c $flag 2>$null | Select-Object -First 1; if ($o -match '(\d+(\.\d+)+)') { $Matches[1] } else { "$o" } } catch { "" }
+  $exe = RealCmd $c; if (-not $exe) { return "" }
+  try { $o = & $exe $flag 2>$null | Select-Object -First 1; if ($o -match '(\d+(\.\d+)+)') { $Matches[1] } else { "$o" } } catch { "" }
+}
+# 멈출 수 있는 명령(로그인 확인 등)은 시간 제한을 두고 돌린다 → @{ Code = 종료 코드(-1 = 시간 초과); Out = 출력 }
+function RunTimed([string]$cmdline, [int]$sec = 25) {
+  $j = Start-Job -ScriptBlock { param($l) $o = cmd /v:on /c "$l 2>&1 & echo __EXIT=!ERRORLEVEL!" | Out-String; $o } -ArgumentList $cmdline
+  if (Wait-Job $j -Timeout $sec) { $o = Receive-Job $j | Out-String; Remove-Job $j -Force
+    $code = if ($o -match '__EXIT=(-?\d+)') { [int]$Matches[1] } else { 1 }
+    return @{ Code = $code; Out = ($o -replace '__EXIT=-?\d+', '').Trim() } }
+  Stop-Job $j; Remove-Job $j -Force; return @{ Code = -1; Out = "" }
 }
 function Begin($n, $name) { $script:CurN = $n; $script:CurName = $name; $script:StepT = Get-Date; Say ""; Say "▶ $n. $name" }
 function Took { [int]((Get-Date) - $script:StepT).TotalSeconds }
@@ -84,6 +126,63 @@ $Steps = @(
 )
 if ($List) { $Steps | ForEach-Object { $a = $_.Split('|'); "$($a[0]). $($a[1])" }; exit 0 }
 
+function AppInstalled($pattern) {
+  $keys = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*", "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*", "HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*"
+  $hit = Get-ItemProperty $keys -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -like $pattern } | Select-Object -First 1
+  if ($hit) { return ($(if ($hit.DisplayVersion) { $hit.DisplayVersion } else { "있음" })) }
+  $pk = Get-AppxPackage -ErrorAction SilentlyContinue | Where-Object { $_.Name -like $pattern -or $_.Name -like ($pattern -replace ' ', '') } | Select-Object -First 1
+  if ($pk) { return $pk.Version }
+  return $null
+}
+
+# ── -Check: 설치는 안 하고 지금 상태만 표로(버전 · 어디 있는지 · 로그인)
+if ($Check) {
+  Refresh-Path
+  $L = @("", "════════════════ 점검 표 (설치는 안 함, $(Get-Date -Format 'MM-dd HH:mm')) ════════════════", "| 무엇 | 상태 | 버전 · 계정 | 메모 |", "|---|---|---|---|")
+  foreach ($c in "git", "gh", "ffmpeg", "node", "python", "aside", "vercel", "higgsfield", "bun", "claude") {
+    $p = RealCmd $c
+    if ($p) { $m = if ($script:Elsewhere[$c]) { "⚠️ PATH 밖에 있음: $($script:Elsewhere[$c])" } else { "" }; $L += "| $c | ✅ 있음 | $(Ver $c) | $m |" }
+    else { $L += "| $c | ❌ 없음 | - | 설치: -Only 로 그 단계 |" }
+  }
+  foreach ($a in @(@("Claude 앱","Claude*"), @("Aside 앱","Aside*"), @("텔레그램 앱","Telegram*"), @("캡컷 앱","CapCut*"))) {
+    $v = AppInstalled $a[1]; $L += $(if ($v) { "| $($a[0]) | ✅ 있음 | $v | |" } else { "| $($a[0]) | ❌ 없음 | - | |" })
+  }
+  $demo = Join-Path $WorkDir ".venv-qwen-tts\Scripts\qwen-tts-demo.exe"
+  $L += $(if (Test-Path $demo) { "| Qwen3-TTS | ✅ 있음 | | $WorkDir\.venv-qwen-tts |" } else { "| Qwen3-TTS | ⏸ 없음 | - | 빈 공간 15GB 이상일 때만 설치 |" })
+  # 연결 · 로그인
+  if (Has claude) {
+    $r = RunTimed "claude mcp get aside"; $L += $(if ($r.Code -eq 0) { "| Aside MCP | ✅ 연결됨 | | |" } else { "| Aside MCP | ❌ 연결 안 됨 | | -Only 11 |" })
+    $r = RunTimed "claude auth status"
+    $L += $(if ($r.Out -match '"loggedIn"\s*:\s*true') { "| Claude Code 로그인 | ✅ 됨 | | |" } else { "| Claude Code 로그인 | ⏸ 안 됨 | | claude 를 열어 /login |" })
+  }
+  if (Has gh) {
+    $r = RunTimed "gh auth status"
+    $acct = if ($r.Out -match 'account (\S+)') { $Matches[1] } else { "" }
+    $L += $(if ($r.Code -eq 0 -and $r.Out -notmatch '(?i)not logged') { "| GitHub(gh) 로그인 | ✅ 됨 | $acct | |" } else { "| GitHub(gh) 로그인 | ⏸ 안 됨 | | gh auth login |" })
+  }
+  if (Has git) {
+    $gn = (& (RealCmd git) config --global user.name 2>$null); $ge = (& (RealCmd git) config --global user.email 2>$null)
+    $L += $(if ($gn -and $ge) { "| git 이름 · 이메일 | ✅ 있음 | $gn | |" } else { "| git 이름 · 이메일 | ⏸ 없음 | | git config --global user.name / user.email |" })
+  }
+  if (Has vercel) {
+    $r = RunTimed "vercel whoami"
+    $who = ($r.Out -split "`n" | Where-Object { $_ -match '^\s*[A-Za-z0-9][\w.-]*\s*$' } | Select-Object -Last 1)
+    $L += $(if ($r.Code -eq 0 -and $r.Out -notmatch '(?i)logged out|no existing credentials|not logged') { "| Vercel 로그인 | ✅ 됨 | $(if ($who) { $who.Trim() }) | |" } elseif ($r.Code -eq -1) { "| Vercel 로그인 | ? 확인 못 함 | | 시간 초과 |" } else { "| Vercel 로그인 | ⏸ 안 됨 | | vercel login |" })
+  }
+  if (Has higgsfield) {
+    # 로그인 상태 명령이 없어 「토큰이 있나」만 본다. 토큰 값은 화면 · 기록 어디에도 남기지 않는다
+    $r = RunTimed "higgsfield auth token"
+    $has = ($r.Code -eq 0) -and ($r.Out.Length -ge 20) -and ($r.Out -notmatch '(?i)error|not (logged|authenticated)|login')
+    $r = $null
+    $L += $(if ($has) { "| 힉스필드 로그인 | ✅ 됨 | | |" } else { "| 힉스필드 로그인 | ⏸ 안 됨 | | higgsfield auth login |" })
+  }
+  $L += ""
+  $L += "✅ 있음 · 됨 / ⏸ 사람이 할 일 남음 / ❌ 없음. 설치가 빠진 것은  powershell -ExecutionPolicy Bypass -File `"$PSCommandPath`" -Only <번호>"
+  $L | ForEach-Object { Write-Host $_ }
+  $L | Set-Content -Path (Join-Path $HOME "nyc-check.txt") -Encoding UTF8
+  exit 0
+}
+
 Say "════════════════════════════════════════"
 Say " 뉴욕 AI 워크숍 설치를 시작합니다 ($(Get-Date -Format HH:mm))"
 Say " 「이 앱이 디바이스를 변경하도록 허용하시겠어요?」 창이 뜨면 「예」를 눌러 주세요."
@@ -112,11 +211,11 @@ if ($Free0 -lt $MinFreeGB) {
 try { Invoke-WebRequest -UseBasicParsing -Method Head -TimeoutSec 15 https://pixi.sh/install.ps1 | Out-Null } catch {
   Say "   ❌ 인터넷에 연결되지 않았습니다. 와이파이를 확인하고 다시 실행해 주세요."; exit 2
 }
-if (-not (Has winget)) {   # 새 계정에서는 등록이 안 돼 있을 수 있다 — 한 번 등록해 본다
+if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {   # 새 계정에서는 등록이 안 돼 있을 수 있다 — 한 번 등록해 본다
   try { Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe -ErrorAction Stop } catch {}
   $env:Path = "$env:Path;$env:LOCALAPPDATA\Microsoft\WindowsApps"
 }
-if (-not (Has winget)) {
+if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
   Say "   ❌ winget(앱 설치 관리자)이 없습니다. Microsoft Store 에서 「앱 설치 관리자」를 설치하거나 업데이트한 뒤 다시 실행해 주세요."; exit 2
 }
 # winget 목록(소스)이 비어 있으면(새 계정 · 처음 쓰는 PC, 오류 0x8a15000f) Microsoft 공식 목록을 다시 넣는다
@@ -146,11 +245,9 @@ foreach ($b in $Base) {
   if (-not (Want $b.N)) { continue }
   Begin $b.N ($Steps[$b.N-1].Split('|')[1])
   # 윈도우의 python 은 Microsoft Store 로 보내는 가짜(WindowsApps)일 수 있다
-  $real = (Has $b.Cmd) -and -not ((Get-Command $b.Cmd).Source -like "*\WindowsApps\*")
-  if ($real) { Skip (Ver $b.Cmd); continue }
+  if (Has $b.Cmd) { $w = if ($script:Elsewhere[$b.Cmd]) { " (PATH 밖: $($script:Elsewhere[$b.Cmd]))" } else { "" }; Skip "$(Ver $b.Cmd)$w"; continue }
   $rc = WingetInstall $b.Id
-  $real = (Has $b.Cmd) -and -not ((Get-Command $b.Cmd).Source -like "*\WindowsApps\*")
-  if ($real) {
+  if (Has $b.Cmd) {
     $v = Ver $b.Cmd
     if ($b.Cmd -eq "python") { if (Has py) { $v = "$v (py -3 $(& py -3 --version 2>$null))" } }
     Ok $v
@@ -227,14 +324,6 @@ function AsideUrl {
   $m = [regex]::Match($h, "https://releases\.aside\.com/dev-updater/windows/[0-9.]+/AsideInstaller-[0-9.]+-win-$a\.exe")
   if ($m.Success) { return $m.Value }
   try { $j = Invoke-RestMethod https://ptqgesmtzwdmeiknncqc.supabase.co/functions/v1/omaha/version_info.json; return $j.platforms.win.architectures.$a.url } catch { return "" }
-}
-function AppInstalled($pattern) {
-  $keys = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*", "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*", "HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*"
-  $hit = Get-ItemProperty $keys -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -like $pattern } | Select-Object -First 1
-  if ($hit) { return ($(if ($hit.DisplayVersion) { $hit.DisplayVersion } else { "있음" })) }
-  $pk = Get-AppxPackage -ErrorAction SilentlyContinue | Where-Object { $_.Name -like $pattern -or $_.Name -like ($pattern -replace ' ', '') } | Select-Object -First 1
-  if ($pk) { return $pk.Version }
-  return $null
 }
 $Apps = @(
   @{ N=12; Name="Claude 앱";   Pattern="Claude*";     Id="Anthropic.Claude";        Url="" },
