@@ -557,7 +557,7 @@ v() { has "$1" && ver "$@" || echo "-"; }
     echo "❌ 실패 ${FAILED}개. 자세한 기록: $LOG"
     echo "   고친 뒤 실패한 번호만 다시:  bash $0 --only <번호>"
   fi
-  echo "다음: Claude 앱을 완전히 끄고(Claude 메뉴 → Quit) 다시 켠 뒤, 왼쪽 목록에서 같은 대화로 돌아오세요. 그래야 새로 깐 도구들이 보입니다."
+  echo "다음: Claude 앱은 끄지 마세요. Aside 로그인을 마친 뒤, 가입 · 로그인(문장 ②)은 Claude 앱 왼쪽 위 New 로 연 새 대화(폴더 nyc-ai-workshop)에서 하세요. 새 대화에서 새로 깐 Aside 도구가 보입니다."
   echo "설치 · 로그인 상태는 언제든:  bash install-mac.sh --check"
   app_installed CapCut.app && echo "캡컷은 응용 프로그램 폴더에서 직접 한 번 열어 보세요(처음 열 때 약관 동의 창이 나옵니다)."
 } | tee "$RESULT" | tee -a "$LOG"
