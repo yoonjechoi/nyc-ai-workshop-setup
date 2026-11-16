@@ -215,14 +215,14 @@ mask() { sed -E 's/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]+/<메일>/g'; }
 if [ "${CHECK:-0}" = 1 ]; then
   C=(); cadd(){ C+=("$1|$2|$3"); }
   st() { [ "$1" = "-" ] && echo "❌" || echo "✅"; }
-  for t in "git --version" "gh --version" "node --version" "python3 --version" "bun --version" "vercel --version" "higgsfield --version" "claude --version" "aside --version"; do
+  for t in "git --version" "gh --version" "node --version" "python3 --version" "bun --version" "vercel --version" "higgsfield --version" "claude --version" "aside --version" "uv --version"; do
     set -- $t
     if has "$1"; then x=$(ver "$@"); x="${x:-있음}$(alt_note "$1")"; else x="-"; fi
     cadd "$1" "$(st "$x")" "$x"
   done
   x=$(has ffmpeg && ffmpeg -version 2>/dev/null | head -n1 | awk '{print $3}' || echo -); cadd ffmpeg "$(st "$x")" "$x"
   V="$WORKDIR/.venv-qwen-tts"
-  if [ -x "$V/bin/qwen-tts-demo" ] && tlimit 90 "$V/bin/qwen-tts-demo" --help >/dev/null 2>&1; then cadd "Qwen3-TTS" "✅" "qwen-tts-demo --help 됨"; else cadd "Qwen3-TTS" "❌" "qwen-tts-demo 가 안 됨"; fi
+  if [ -x "$V/bin/qwen-tts-demo" ] && tlimit 90 "$V/bin/qwen-tts-demo" --help >/dev/null 2>&1; then cadd "Qwen3-TTS" "✅" "qwen-tts-demo --help 됨"; elif [ ! -x "$V/bin/python" ]; then cadd "Qwen3-TTS" "❌" "안 깔림(빈 공간 15GB 넘게 만든 뒤 bash install-mac.sh --only 13)"; else cadd "Qwen3-TTS" "❌" "qwen-tts-demo 가 안 됨 → bash install-mac.sh --only 13"; fi
   for a in Claude Aside Telegram CapCut; do
     if app_installed "$a.app"; then cadd "$a 앱" "✅" "$(app_ver "$(app_path "$a.app")")"; else cadd "$a 앱" "❌" "없음"; fi
   done
@@ -342,6 +342,11 @@ if want 2; then begin 2 "Git · GitHub CLI · ffmpeg · Node.js · Python"
     if [ ${#MISS[@]} -eq 0 ]; then ok x "" "git $(ver git --version) · gh $(ver gh --version) · ffmpeg $(ffmpeg -version 2>/dev/null | head -n1 | awk '{print $3}') · node $(ver node --version) · python $(ver python3 --version)" "$(took)"; else bad x "안 깔린 것: ${MISS[*]}" "$(took)"; fi
   fi
   # 버전 줄은 표에서 따로 보여 준다
+  # uv(파이썬 도구 실행기)는 Qwen3-TTS 와 ElevenLabs MCP(uvx) 가 같이 쓴다. Qwen 을 건너뛰어도 깔리게 여기서 넣는다.
+  if ! has uv; then
+    logsh 'curl -LsSf https://astral.sh/uv/install.sh | env UV_NO_MODIFY_PATH=1 sh'
+    has uv && say "   + uv $(ver uv --version)" || { say "   ⚠️ uv 설치 실패(13번 · 일레븐랩스 MCP 에 필요)"; }
+  fi
 fi
 
 on_path() { case ":$PATH:" in *":$1:"*) return 0;; esac; return 1; }
