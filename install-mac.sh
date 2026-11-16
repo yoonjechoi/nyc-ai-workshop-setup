@@ -249,7 +249,7 @@ if [ "${CHECK:-0}" = 1 ]; then
   else ladd "Aside 로그인" "-" "aside 없음"; fi
   if has claude; then
     tlimit 20 claude mcp get aside >/dev/null 2>&1 && ladd "Aside MCP" "✅" "Claude 에 연결됨" || ladd "Aside MCP" "❌" "bash install-mac.sh --only 8"
-    tlimit 20 claude mcp get elevenlabs >/dev/null 2>&1 && ladd "ElevenLabs MCP" "✅" "Claude 에 연결됨" || ladd "ElevenLabs MCP" "⏸" "연결 안 함(필요할 때만)"
+    tlimit 20 claude mcp get elevenlabs >/dev/null 2>&1 && ladd "ElevenLabs MCP" "✅" "Claude 에 연결됨" || ladd "ElevenLabs MCP" "❌" "연결 안 됨 → 문장 ② 의 일레븐랩스 줄을 다시"
   fi
   {
     echo ""
