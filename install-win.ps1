@@ -119,7 +119,7 @@ function WingetHas($id) { $o = winget list --id $id -e --accept-source-agreement
 
 # ───────────────────────── 단계 ─────────────────────────
 $Steps = @(
-  "1|Git", "2|GitHub CLI(gh)", "3|ffmpeg", "4|Node.js LTS", "5|Python 3",
+  "1|Git", "2|GitHub CLI(gh)", "3|ffmpeg", "4|Node.js LTS", "5|Python 3 · uv",
   "6|Aside CLI", "7|Vercel CLI", "8|힉스필드 CLI", "9|Bun", "10|Claude Code 터미널판",
   "11|Aside 를 Claude 에 연결(MCP)", "12|Claude 앱", "13|Aside 앱", "14|텔레그램 앱", "15|캡컷 앱",
   "16|Qwen3-TTS(목소리 만들기)"
@@ -139,7 +139,7 @@ function AppInstalled($pattern) {
 if ($Check) {
   Refresh-Path
   $L = @("", "════════════════ 점검 표 (설치는 안 함, $(Get-Date -Format 'MM-dd HH:mm')) ════════════════", "| 무엇 | 상태 | 버전 · 계정 | 메모 |", "|---|---|---|---|")
-  foreach ($c in "git", "gh", "ffmpeg", "node", "python", "aside", "vercel", "higgsfield", "bun", "claude") {
+  foreach ($c in "git", "gh", "ffmpeg", "node", "python", "uv", "aside", "vercel", "higgsfield", "bun", "claude") {
     $p = RealCmd $c
     if ($p) { $m = if ($script:Elsewhere[$c]) { "⚠️ PATH 밖에 있음: $($script:Elsewhere[$c])" } else { "" }; $L += "| $c | ✅ 있음 | $(Ver $c) | $m |" }
     else { $L += "| $c | ❌ 없음 | - | 설치: -Only 로 그 단계 |" }
@@ -253,6 +253,19 @@ foreach ($b in $Base) {
     if ($b.Cmd -eq "python") { if (Has py) { $v = "$v (py -3 $(& py -3 --version 2>$null))" } }
     Ok $v
   } else { Bad "winget $($b.Id) 설치 뒤에도 $($b.Cmd) 명령이 안 보임 (코드 $rc)" }
+}
+
+# 5번에 딸린 uv(파이썬 도구 실행기): Qwen3-TTS 를 건너뛰는 PC 에서도 ElevenLabs MCP(uvx) 가 돌게, Python 이 이미 있어도 따로 확인한다
+function EnsureUv {
+  if (Has uv) { return $true }
+  WingetInstall "astral-sh.uv" | Out-Null
+  if (-not (Has uv)) { LogRun "irm https://astral.sh/uv/install.ps1 | iex" | Out-Null; Refresh-Path }
+  return (Has uv)
+}
+if (Want 5) {
+  if (Has uv) { Say "   ⏭  uv 이미 있음  $(Ver uv)" }
+  elseif (EnsureUv) { Say "   ✅ uv $(Ver uv)" }
+  else { $script:CurN = 5; $script:CurName = "uv"; $script:StepT = Get-Date; Bad "uv 설치 실패 — ElevenLabs MCP 와 Qwen3-TTS 에 필요" }
 }
 
 # npm 전역 설치 자리(내 계정, 비밀번호 없이)
@@ -373,7 +386,7 @@ if (Want 16) { Begin 16 "Qwen3-TTS(목소리 만들기)"
   if ((Test-Path $demo) -and ((& $demo --help *>&1 | Out-String) -match "usage")) { Skip (& $vpy -c "import importlib.metadata as m;print(m.version('qwen-tts'))") }
   elseif (-not $TtsOk -and $Only -ne "16") { Pass "용량이 모자라 뺌(시작할 때 ${Free0}GB, ${TtsFreeGB}GB 필요)" }
   else {
-    if (-not (Has uv)) { WingetInstall "astral-sh.uv" | Out-Null; if (-not (Has uv)) { LogRun "irm https://astral.sh/uv/install.ps1 | iex" | Out-Null; Refresh-Path } }
+    EnsureUv | Out-Null
     if (-not (Has sox)) { WingetInstall "ChrisBagwell.SoX" | Out-Null }
     if (-not (Has uv)) { Bad "uv 설치 실패" }
     else {
