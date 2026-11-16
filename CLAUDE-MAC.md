@@ -40,16 +40,18 @@
 4. 도중에 「python3 … 개발자 도구를 설치할까요?」 창이 뜨면 사람에게 **Cancel** 을 누르라고 말한다. 눌러도 안 눌러도 설치는 끝난다.
 5. 끝나면 점검 표를 그대로 보여 준다.
 
-**⏸ 사람 차례 — 앱 다시 켜기 · Aside 로그인 (약 5분)** 아래 내용을 그대로 안내하고 「했어」를 기다린다.
-- Claude 메뉴 → **Quit Claude** → 다시 켜기 → 왼쪽 목록에서 **이 대화**를 다시 연다(새 대화 아님).
-- Spotlight 에 `Aside` → **Continue with Google** 로 로그인한다. 이어지는 첫 안내 화면에서는 이렇게 고른다.
+**Aside 띄우기 — Claude 앱은 끄지 않는다.**
+- 새로 깐 도구는 이 대화의 PATH 에 아직 없을 수 있다. 그래서 이후 모든 터미널 명령 앞에 `export PATH="$HOME/.pixi/bin:$HOME/.npm-global/bin:$HOME/.bun/bin:$HOME/.local/bin:$PATH";` 를 붙인다. 사람에게 앱을 끄라고 하지 않는다.
+- `open -a Aside` 로 네가 Aside 를 띄운다.
+
+**⏸ 사람 차례 — Aside 로그인 (약 3분)** Aside 창이 뜨면 아래 내용을 안내하고 「했어」를 기다린다.
+- **Continue with Google** 로 로그인한다. 이어지는 첫 안내 화면에서는 이렇게 고른다.
   - Import from Safari: **Cancel**
   - 볼트 비밀번호를 정하고, **복구 암호는 종이에 적는다**(Claude 에게 주지 않기)
   - Choose your AI subscription: **Claude → Connect → Authorize** (꼭 하기)
   - Let your agents browse: **Skip**
   - Get started
 - 「Allow "Aside" to find devices on local networks?」가 뜨면 **Allow**
-- Claude 앱 오른쪽에 터미널 칸이 열려 있으면 닫는다.
 
 ### 2단계 가입 · 로그인 · 연결 (약 35분)
 시작할 때 **생년월일을 한 번만** 묻고, 가입 화면에서 생년월일이나 나이를 물으면 그 값을 넣는다. 수강생은 만 18세 이상이니 나이 때문에 멈추지 않는다.
@@ -68,8 +70,7 @@
 
 **⏸ 사람 차례 — 커넥터 2개 (약 3분)** 아래 내용을 그대로 안내하고 「했어」를 기다린다.
 - Claude 앱 설정 → Connectors 에서 **Higgsfield** 와 **ElevenLabs** 를 Connect → 구글 로그인 → Allow
-- Claude 앱을 Quit → 다시 켜고 이 대화로 돌아오기
-- 돌아오면 너는 두 커넥터가 보이는지만 확인한다(생성은 하지 않는다).
+- 다 했다고 하면 너는 두 커넥터가 보이는지만 확인한다(생성은 하지 않는다). 안 보일 때만 앱을 다시 켜 달라고 한다.
 
 **표 보여 주기:** `bash install-mac.sh --check` 결과 표를 보여 준다. 사이트마다 ✅ / ⏸ 로 사람이 할 일(어느 탭에서 무엇을)도 표로 보여 준다. ⏸ 가 있으면 사람이 하고 「다 했어」라고 할 때까지 기다린다. 이미 2단계 인증을 켠 계정, 캡차, Vercel 휴대폰 인증이 여기에 해당한다.
 
