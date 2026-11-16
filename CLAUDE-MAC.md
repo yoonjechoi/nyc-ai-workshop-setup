@@ -44,14 +44,15 @@
 - 새로 깐 도구는 이 대화의 PATH 에 아직 없을 수 있다. 그래서 이후 모든 터미널 명령 앞에 `export PATH="$HOME/.pixi/bin:$HOME/.npm-global/bin:$HOME/.bun/bin:$HOME/.local/bin:$PATH";` 를 붙인다. 사람에게 앱을 끄라고 하지 않는다.
 - `open -a Aside` 로 네가 Aside 를 띄운다.
 
-**⏸ 사람 차례 — Aside 로그인 (약 3분)** Aside 창이 뜨면 아래 내용을 안내하고 「했어」를 기다린다.
-- **Continue with Google** 로 로그인한다. 이어지는 첫 안내 화면에서는 이렇게 고른다.
-  - Import from Safari: **Cancel**
-  - 볼트 비밀번호를 정하고, **복구 암호는 종이에 적는다**(Claude 에게 주지 않기)
-  - Choose your AI subscription: **Claude → Connect → Authorize** (꼭 하기)
-  - Let your agents browse: **Skip**
-  - Get started
-- 「Allow "Aside" to find devices on local networks?」가 뜨면 **Allow**
+**⏸ 사람 차례 — Aside 구글 로그인 (약 1분)** Aside 창이 뜨면 「**Continue with Google** 로 로그인하고, 끝나면 '했어'라고 보내 주세요」라고 안내하고 기다린다.
+
+**Aside 첫 안내 화면 — 네가 computer use 로 진행한다**(「했어」를 받은 뒤)
+- Import from your browser: **Skip**
+- 볼트(비밀번호 관리자) 비밀번호 · 복구 암호 화면이 나오면 **멈추고** 사람에게 맡긴다: 「볼트 비밀번호를 정하고 복구 암호는 종이에 적어 주세요(저에게 알려 주지 마세요). 다 하면 '했어'」
+- Choose your AI subscription: **Claude → Connect → Authorize** (꼭 한다)
+- Let your agents browse: **Skip**
+- **Get started**
+- macOS 「Allow "Aside" to find devices on local networks?」 창이 뜨면 사람에게 **Allow** 를 눌러 달라고 한다(시스템 권한 창은 사람이 누른다).
 
 ### 2단계 가입 · 로그인 · 연결 (약 35분)
 시작할 때 **생년월일을 한 번만** 묻고, 가입 화면에서 생년월일이나 나이를 물으면 그 값을 넣는다. 수강생은 만 18세 이상이니 나이 때문에 멈추지 않는다.
