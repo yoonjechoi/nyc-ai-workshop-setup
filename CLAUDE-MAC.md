@@ -63,6 +63,7 @@
 1. **Aside 연결 확인:** Aside → Settings → Models 에 Claude 가 있는지 본다. 없으면 + Connect → Claude → Connect → Authorize 를 누른다.
 2. **가입:** Aside 에 로그인된 Gmail 로 한다. 약관은 수강생이 읽고 동의한 것으로 보고, 결제와 유료 요금제는 하지 않는다.
    1. Supabase(`supabase.com/dashboard/sign-up`) → Continue with GitHub. GitHub 계정이 없으면 그 화면에서 구글로 GitHub 에 가입한 뒤 Authorize 를 누른다.
+      GitHub 가입 화면(github.com 의 Sign up, 사용자 이름, 확인 단계)은 Aside MCP 로만 한다. computer use 는 쓰지 않는다. Aside 로 안 넘어가면 그 탭을 두고 사람에게 무엇을 누르면 되는지 한 줄로 알려 준다.
    2. Vercel(`vercel.com/signup`, Hobby, Continue with Google)
    3. 나머지는 Aside 새 탭에 한꺼번에 연다: 힉스필드 · 일레븐랩스 · 미드저니 · Suno · 캡컷(모두 구글로)
 3. **로그인**(각각 한 번만 시도한다. 주소는 Aside 에서 열고 허용 단추를 누른다)
