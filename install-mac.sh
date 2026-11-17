@@ -239,7 +239,7 @@ if [ "${CHECK:-0}" = 1 ]; then
   # 힉스필드: 상태 명령이 있으면 그걸, 없으면 토큰을 받을 수 있는지만(토큰 값은 버린다)
   if has higgsfield; then x=$(tlimit 25 higgsfield account status 2>/dev/null | head -n1 | mask)
     case "$x" in *credit*|*plan*) ladd 힉스필드 "✅" "$x";;
-      *) if tlimit 25 higgsfield auth token >/dev/null 2>&1; then ladd 힉스필드 "✅" "로그인됨"; else ladd 힉스필드 "⏸" "터미널 로그인 안 함 — Claude 설정 → Connectors 의 Higgsfield 로 연결(터미널에서는 확인 못 함)"; fi;; esac
+      *) if tlimit 25 higgsfield auth token >/dev/null 2>&1; then ladd 힉스필드 "✅" "로그인됨"; else ladd 힉스필드 "⏸" "로그인 안 함 → higgsfield auth login(주소는 Aside 에서)"; fi;; esac
   else ladd 힉스필드 "-" "higgsfield 없음"; fi
   if has claude; then if tlimit 20 claude auth status 2>/dev/null | grep -q '"loggedIn": *true'; then ladd "Claude Code 터미널판" "✅" "$(tlimit 20 claude auth status 2>/dev/null | grep -o '"subscriptionType": *"[a-z]*"' | grep -o '"[a-z]*"$' | tr -d '"')"; else ladd "Claude Code 터미널판" "❌" "로그인 안 됨 → claude 실행 후 /login"; fi; else ladd "Claude Code 터미널판" "-" "claude 없음"; fi
   # Aside: 로그인하면 프로필 이름이 내 이름(「홍길동」 · 「홍길동 (Work)」)으로 바뀐다. 로그인 전에는 「Work」 같은 기본 이름.
@@ -249,7 +249,7 @@ if [ "${CHECK:-0}" = 1 ]; then
   else ladd "Aside 로그인" "-" "aside 없음"; fi
   if has claude; then
     tlimit 20 claude mcp get aside >/dev/null 2>&1 && ladd "Aside MCP" "✅" "Claude 에 연결됨" || ladd "Aside MCP" "❌" "bash install-mac.sh --only 8"
-    tlimit 20 claude mcp get elevenlabs >/dev/null 2>&1 && ladd "ElevenLabs" "✅" "MCP 로 연결됨" || ladd "ElevenLabs" "⏸" "Claude 설정 → Connectors 의 ElevenLabs 로 연결(터미널에서는 확인 못 함)"
+    tlimit 20 claude mcp get elevenlabs >/dev/null 2>&1 && ladd "ElevenLabs" "✅" "MCP 로 연결됨" || ladd "ElevenLabs" "⏸" "MCP 없음 → 무료 계정 API 키로 claude mcp add elevenlabs(문장 ② 3-⑤)"
   fi
   {
     echo ""
@@ -481,7 +481,7 @@ if want 15; then begin 15 "작업 폴더 규칙(CLAUDE.md)"
 <!-- >>> nyc-ai-workshop 규칙 >>> (설치 스크립트가 넣음. 이 사이는 다시 돌리면 그대로 둔다) -->
 # 뉴욕 AI 워크숍 작업 폴더 규칙
 - 사용자는 컴퓨터 초보다. 처음부터 끝까지 한국어로, 쉬운 말로, 짧게 알려 준다.
-- 웹 화면은 Aside(MCP)로 한다. 로그인 주소(vercel login · gh auth login · claude 로그인 등)는 Safari 가 아니라 Aside 에서 연다. 힉스필드 · 일레븐랩스는 사람이 Claude 커넥터로 연결한다.
+- 웹 화면은 Aside(MCP)로 한다. 로그인 주소(vercel login · gh auth login · claude 로그인 등)는 Safari 가 아니라 Aside 에서 연다. 힉스필드는 higgsfield auth login, 일레븐랩스는 무료 계정 API 키로 elevenlabs MCP 를 등록한다(키는 채팅에 쓰지 않고 클립보드로만).
 - 터미널 명령은 사람에게 넘기지 말고 직접 실행한다(claude 는 ~/.local/bin/claude).
 - 자동 클릭이 막힌 단추(GitHub Authorize, Vercel Allow Access 같은 것)와 Aside 밖에 뜬 창은 computer use 전체 화면 제어로 마우스를 움직여 직접 누른다.
 - 비밀번호 · 인증 코드 · 캡차 · 결제 화면은 손대지 않는다. 그 탭은 그대로 두고 다음으로 넘어간 뒤, 마지막에 「어느 탭에서 무엇을」 한 줄로 알려 준다.

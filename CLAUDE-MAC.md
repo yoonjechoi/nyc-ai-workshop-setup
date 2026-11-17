@@ -69,27 +69,22 @@
    - `vercel login`
    - `gh auth login`(git 이름 · 이메일을 GitHub 계정에 맞춘다)
    - claude 터미널판 로그인
+   - 힉스필드: `higgsfield auth login`. 힉스필드 스킬(~/.claude/skills/higgsfield-*)은 이 CLI 를 쓴다.
+   - 일레븐랩스: Aside 에서 elevenlabs.io(무료 계정) → API Keys → 새 키 만들기. 키 값은 채팅 · 화면 캡처에 남기지 말고 복사(클립보드)만 한 뒤 `claude mcp add elevenlabs -s user -e ELEVENLABS_API_KEY="$(pbpaste)" -- uvx elevenlabs-mcp` 로 등록하고 `printf '' | pbcopy` 로 클립보드를 비운다.
 4. 비밀번호 · 인증 코드 · 캡차 · 결제 화면이 나온 탭은 그대로 두고 다음으로 넘어간다.
 
 **⏸ 사람 차례 — Allow 창** 처음 다른 앱을 쓸 때 대화 안에 「Allow Claude to use 앱이름?」 이, 화면 전체를 쓸 때 「Take over the screen?」 이 뜬다. 사람에게 「대화 아래 주황색 'Needs your input' 이 보이면 **Allow for this session** 을 눌러 주세요」라고 미리 말해 둔다.
-
-**⏸ 사람 차례 — 커넥터 2개 (약 3분)** 아래 내용을 그대로 안내하고 「했어」를 기다린다.
-- Claude 앱 설정 → Connectors 에서 **Higgsfield** 와 **ElevenLabs** 를 Connect → 구글 로그인 → Allow
-- 다 했다고 하면 너는 두 커넥터가 보이는지만 확인한다(생성은 하지 않는다). 안 보일 때만 앱을 다시 켜 달라고 한다.
-
-**예비 — 커넥터가 안 될 때만**(커넥터 연결이 실패하거나, 앱을 다시 켜도 안 보일 때. 설치 스크립트가 도구는 이미 깔아 둠)
-- 힉스필드: `higgsfield auth login` 을 실행하고 로그인 주소는 Aside 에서 연다. 캡차 · 인증 코드가 나오면 그 탭을 사람에게 맡긴다. 힉스필드 스킬(~/.claude/skills/higgsfield-*)은 이 CLI 를 쓴다.
-- 일레븐랩스: Aside 에서 elevenlabs.io(무료 계정) → API Keys → 새 키 만들기. 키 값은 채팅 · 화면 캡처에 남기지 말고 복사(클립보드)만 한 뒤 `claude mcp add elevenlabs -s user -e ELEVENLABS_API_KEY="$(pbpaste)" -- uvx elevenlabs-mcp` 로 등록하고 `printf '' | pbcopy` 로 클립보드를 비운다. 이 명령을 네가 실행할 수 없으면 사람에게 ▶ 를 눌러 달라고 한다.
 
 **표 보여 주기:** `bash install-mac.sh --check` 결과 표를 보여 준다. 사이트마다 ✅ / ⏸ 로 사람이 할 일(어느 탭에서 무엇을)도 표로 보여 준다. ⏸ 가 있으면 사람이 하고 「다 했어」라고 할 때까지 기다린다. 이미 2단계 인증을 켠 계정, 캡차, Vercel 휴대폰 인증이 여기에 해당한다.
 
 **⏸ 사람 차례 — 휴대폰 (2단계가 도는 동안 해도 된다)** 아래 내용을 안내한다.
 - 휴대폰에 Claude 앱을 깔고 같은 구글 계정으로 로그인한다.
+- 휴대폰에 Telegram 을 깔고 전화번호로 가입한다(문자 코드는 사람이 넣는다). 휴대폰에서 먼저 가입해야 3단계에서 노트북 텔레그램을 연결할 수 있다.
 - Aside 새 탭에서 `instagram.com` 에 직접 로그인한다(없으면 건너뜀).
 
 ### 3단계 텔레그램 (약 10분)
-**⏸ 사람 차례 — 텔레그램 로그인 (약 3분)** 아래 내용을 안내하고 「했어」를 기다린다.
-- 휴대폰에 Telegram 을 깔고 전화번호로 가입한다.
+**⏸ 사람 차례 — 노트북 텔레그램 로그인 (약 2분)** 아래 내용을 안내하고 「했어」를 기다린다.
+- 휴대폰 텔레그램은 2단계 휴대폰 차례에서 이미 가입해 두었어야 한다. 안 했으면 먼저 하게 한다.
 - 노트북의 Telegram 앱(설치 스크립트가 깔아 둠)을 열면 QR 코드가 뜬다.
 - 휴대폰 텔레그램 설정 → 기기 → **데스크톱 기기 연결** 로 그 QR 을 스캔한다.
 
