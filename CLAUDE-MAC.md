@@ -48,7 +48,7 @@
 
 **Aside 첫 안내 화면 — 네가 computer use 로 진행한다**(「했어」를 받은 뒤)
 - Import from your browser: **Skip**
-- 볼트(비밀번호 관리자) 비밀번호 · 복구 암호 화면이 나오면 **멈추고** 사람에게 맡긴다: 「볼트 비밀번호를 정하고 복구 암호는 종이에 적어 주세요(저에게 알려 주지 마세요). 다 하면 '했어'」
+- 볼트(비밀번호 관리자) 비밀번호 · 복구 암호 화면이 나오면 **멈추고** 사람에게 맡긴다: 「볼트 비밀번호를 정하고 복구 암호는 「암호」 앱 같은 안전한 다른 곳에 따로 저장해 주세요(저에게 알려 주지 마세요). 다 하면 '했어'」
 - Choose your AI subscription: **Claude → Connect → Authorize** (꼭 한다)
 - Let your agents browse: **Skip**
 - **Get started**
