@@ -125,7 +125,7 @@ function WingetHas($id) { $o = winget list --id $id -e --accept-source-agreement
 # ───────────────────────── 단계 ─────────────────────────
 $Steps = @(
   "1|Git", "2|GitHub CLI(gh)", "3|ffmpeg", "4|Node.js LTS", "5|Python 3 · uv",
-  "6|Aside CLI", "7|Vercel CLI", "8|힉스필드 CLI", "9|Bun", "10|Claude Code 터미널판",
+  "6|Aside CLI", "7|Vercel · Supabase CLI", "8|힉스필드 CLI", "9|Bun", "10|Claude Code 터미널판",
   "11|Aside 를 Claude 에 연결(MCP)", "12|Claude 앱", "13|Aside 앱", "14|텔레그램 앱", "15|캡컷 앱",
   "16|Qwen3-TTS(목소리 만들기)"
 )
@@ -144,7 +144,7 @@ function AppInstalled($pattern) {
 if ($Check) {
   Refresh-Path
   $L = @("", "════════════════ 점검 표 (설치는 안 함, $(Get-Date -Format 'MM-dd HH:mm')) ════════════════", "| 무엇 | 상태 | 버전 · 계정 | 메모 |", "|---|---|---|---|")
-  foreach ($c in "git", "gh", "ffmpeg", "node", "python", "uv", "aside", "vercel", "higgsfield", "bun", "claude") {
+  foreach ($c in "git", "gh", "ffmpeg", "node", "python", "uv", "aside", "vercel", "supabase", "higgsfield", "bun", "claude") {
     $p = RealCmd $c
     if ($p) { $m = if ($script:Elsewhere[$c]) { "⚠️ PATH 밖에 있음: $($script:Elsewhere[$c])" } else { "" }; $L += "| $c | ✅ 있음 | $(Ver $c) | $m |" }
     else { $L += "| $c | ❌ 없음 | - | 설치: -Only 로 그 단계 |" }
@@ -157,30 +157,20 @@ if ($Check) {
   # 연결 · 로그인
   if (Has claude) {
     $r = RunTimed "claude mcp get aside"; $L += $(if ($r.Code -eq 0) { "| Aside MCP | ✅ 연결됨 | | |" } else { "| Aside MCP | ❌ 연결 안 됨 | | -Only 11 |" })
-    $r = RunTimed "claude mcp get elevenlabs"; $L += $(if ($r.Code -eq 0) { "| ElevenLabs | ✅ MCP 로 연결됨 | | |" } else { "| ElevenLabs | ⏸ MCP 없음 | | Claude 설정 → Connectors 의 ElevenLabs 로 연결(터미널에서는 확인 못 함) |" })
+    $r = RunTimed "claude mcp get elevenlabs"; $L += $(if ($r.Code -eq 0) { "| ElevenLabs | ✅ MCP 로 연결됨 | | |" } else { "| ElevenLabs | ⏸ MCP 없음 | | 무료 계정 API 키로 claude mcp add elevenlabs(프롬프트 2 의 로그인) |" })
     $r = RunTimed "claude auth status"
     $L += $(if ($r.Out -match '"loggedIn"\s*:\s*true') { "| Claude Code 로그인 | ✅ 됨 | | |" } else { "| Claude Code 로그인 | ⏸ 안 됨 | | claude 를 열어 /login |" })
-  }
-  if (Has gh) {
-    $r = RunTimed "gh auth status"
-    $acct = if ($r.Out -match 'account (\S+)') { $Matches[1] } else { "" }
-    $L += $(if ($r.Code -eq 0 -and $r.Out -notmatch '(?i)not logged') { "| GitHub(gh) 로그인 | ✅ 됨 | $acct | |" } else { "| GitHub(gh) 로그인 | ⏸ 안 됨 | | gh auth login |" })
   }
   if (Has git) {
     $gn = (& (RealCmd git) config --global user.name 2>$null); $ge = (& (RealCmd git) config --global user.email 2>$null)
     $L += $(if ($gn -and $ge) { "| git 이름 · 이메일 | ✅ 있음 | $gn | |" } else { "| git 이름 · 이메일 | ⏸ 없음 | | git config --global user.name / user.email |" })
-  }
-  if (Has vercel) {
-    $r = RunTimed "vercel whoami"
-    $who = ($r.Out -split "`n" | Where-Object { $_ -match '^\s*[A-Za-z0-9][\w.-]*\s*$' } | Select-Object -Last 1)
-    $L += $(if ($r.Code -eq 0 -and $r.Out -notmatch '(?i)logged out|no existing credentials|not logged') { "| Vercel 로그인 | ✅ 됨 | $(if ($who) { $who.Trim() }) | |" } elseif ($r.Code -eq -1) { "| Vercel 로그인 | ? 확인 못 함 | | 시간 초과 |" } else { "| Vercel 로그인 | ⏸ 안 됨 | | vercel login |" })
   }
   if (Has higgsfield) {
     # 로그인 상태 명령이 없어 「토큰이 있나」만 본다. 토큰 값은 화면 · 기록 어디에도 남기지 않는다
     $r = RunTimed "higgsfield auth token"
     $has = ($r.Code -eq 0) -and ($r.Out.Length -ge 20) -and ($r.Out -notmatch '(?i)error|not (logged|authenticated)|login')
     $r = $null
-    $L += $(if ($has) { "| 힉스필드 로그인 | ✅ 됨 | | |" } else { "| 힉스필드 | ⏸ 터미널 로그인 안 함 | | Claude 설정 → Connectors 의 Higgsfield 로 연결(터미널에서는 확인 못 함) |" })
+    $L += $(if ($has) { "| 힉스필드 로그인 | ✅ 됨 | | |" } else { "| 힉스필드 로그인 | ⏸ 안 됨 | | higgsfield auth login(주소는 Aside 에서) |" })
   }
   $L += ""
   $L += "✅ 있음 · 됨 / ⏸ 사람이 할 일 남음 / ❌ 없음. 설치가 빠진 것은  powershell -ExecutionPolicy Bypass -File `"$PSCommandPath`" -Only <번호>"
@@ -288,11 +278,27 @@ if (Want 6) { Begin 6 "Aside CLI"
     if (Has aside) { Ok (Ver aside) } else { Bad "aside 명령이 안 보임" }
   }
 }
-# ── 7. Vercel CLI
-if (Want 7) { Begin 7 "Vercel CLI"
-  if (Has vercel) { Skip (Ver vercel) }
-  elseif (-not (NpmReady)) { Pass "Node.js 가 없어서(4번 먼저)" }
-  else { LogRun "npm install -g vercel" | Out-Null; Refresh-Path; if (Has vercel) { Ok (Ver vercel) } else { Bad "vercel 명령이 안 보임" } }
+# ── 7. Vercel CLI(npm) · Supabase CLI(공식 GitHub 릴리스의 미리 만든 파일 → ~\.local\bin). 가입 · 로그인은 하지 않는다
+if (Want 7) { Begin 7 "Vercel · Supabase CLI"
+  if ((Has vercel) -and (Has supabase)) { Skip "vercel $(Ver vercel) · supabase $(Ver supabase)" }
+  else {
+    if (-not (Has vercel) -and (NpmReady)) { LogRun "npm install -g vercel" | Out-Null; Refresh-Path }
+    if (-not (Has supabase)) {
+      $sa = if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "arm64" } else { "amd64" }
+      $sd = Join-Path $env:TEMP "nyc-supabase"; Remove-Item $sd -Recurse -Force -ErrorAction SilentlyContinue; New-Item -ItemType Directory -Force -Path $sd | Out-Null
+      New-Item -ItemType Directory -Force -Path "$HOME\.local\bin" | Out-Null
+      try {
+        Invoke-WebRequest -UseBasicParsing "https://github.com/supabase/cli/releases/latest/download/supabase_windows_$sa.tar.gz" -OutFile "$sd\s.tgz"
+        & tar.exe -xzf "$sd\s.tgz" -C $sd 2>&1 | Out-String | Add-Content $Log -Encoding UTF8
+        if (Test-Path "$sd\supabase.exe") { Move-Item -Force "$sd\supabase.exe" "$HOME\.local\bin\supabase.exe" }
+      } catch { Add-Content $Log "$_" -Encoding UTF8 }
+      Remove-Item $sd -Recurse -Force -ErrorAction SilentlyContinue; Refresh-Path
+    }
+    $v7 = if (Has vercel) { "vercel $(Ver vercel)" } else { "" }; $s7 = if (Has supabase) { "supabase $(Ver supabase)" } else { "" }
+    if ($v7 -and $s7) { Ok "$v7 · $s7" }
+    elseif (-not $v7 -and -not (NpmReady)) { Bad ("vercel: Node.js 가 없어서(4번 먼저)" + $(if ($s7) { " · $s7 됨" } else { " · supabase 명령이 안 보임" })) }
+    else { Bad ($(if ($v7) { $v7 } else { "vercel 명령이 안 보임" }) + " · " + $(if ($s7) { $s7 } else { "supabase 명령이 안 보임" })) }
+  }
 }
 # ── 8. 힉스필드 CLI (higgsfield.ai/cli 안내: npm)
 if (Want 8) { Begin 8 "힉스필드 CLI"
@@ -416,7 +422,7 @@ $lines += "|---|---|---|---|---|"
 foreach ($r in $Rows) { if ($r.N -eq 0) { continue }; $lines += "| $($r.N) | $($r.Name) | $($r.R) | $($r.V) | $(if ($r.S -eq 0) { '-' } else { Secs $r.S }) |" }
 $lines += ""
 $lines += "지금 쓸 수 있는 명령(버전):"
-$lines += "  git $(V git) · gh $(V gh) · ffmpeg $(V ffmpeg) · node $(V node) · python $(V python) · aside $(V aside) · vercel $(V vercel) · higgsfield $(V higgsfield) · bun $(V bun) · claude $(V claude)"
+$lines += "  git $(V git) · gh $(V gh) · ffmpeg $(V ffmpeg) · node $(V node) · python $(V python) · aside $(V aside) · vercel $(V vercel) · supabase $(V supabase) · higgsfield $(V higgsfield) · bun $(V bun) · claude $(V claude)"
 $lines += "  남은 용량: 시작 ${Free0}GB → 지금 $(FreeGB)GB"
 $lines += ""
 if ($script:Failed -eq 0) { $lines += "✅ 설치가 끝났습니다." }
