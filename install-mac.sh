@@ -228,11 +228,7 @@ if [ "${CHECK:-0}" = 1 ]; then
   done
   [ -d "$HOME/.claude/skills/higgsfield-generate" ] && cadd "힉스필드 스킬" "✅" "$(ls -d "$HOME"/.claude/skills/higgsfield-* 2>/dev/null | wc -l | tr -d ' ')개" || cadd "힉스필드 스킬" "❌" "없음"
   L=(); ladd(){ L+=("$1|$2|$3"); }
-  # vercel whoami 는 로그아웃이어도 종료 코드 0 → 글자로 판단
-  if has vercel; then x=$(tlimit 25 vercel whoami 2>&1 | grep -v '^Vercel CLI' | tail -n1 | mask)
-    case "$x" in ""|*[Ll]ogged\ out*|*[Ll]og\ in*|*[Nn]o\ existing*|*[Ee]rror*|*credentials*) ladd Vercel "-" "로그인 안 함(사전 설치에서는 안 해도 됨)";; *) ladd Vercel "✅" "$x";; esac
-  else ladd Vercel "-" "vercel 없음"; fi
-  if has gh; then if tlimit 20 gh auth status >/dev/null 2>&1; then ladd GitHub "✅" "$(tlimit 20 gh api user --jq .login 2>/dev/null)"; else ladd GitHub "-" "로그인 안 함(사전 설치에서는 안 해도 됨)"; fi; else ladd GitHub "-" "gh 없음"; fi
+  # GitHub · Vercel · Supabase 는 사전 설치에서 가입 · 로그인하지 않으므로 로그인 상태는 보지 않는다(CLI 버전만 위 표에)
   if has git; then gn=$(git config --global user.name 2>/dev/null); ge=$(git config --global user.email 2>/dev/null)
     [ -n "$gn" ] && [ -n "$ge" ] && ladd "git 이름 · 메일" "✅" "$gn · $(echo "$ge" | mask)" || ladd "git 이름 · 메일" "❌" "git config --global user.name / user.email"
   fi
