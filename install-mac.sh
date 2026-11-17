@@ -230,7 +230,7 @@ if [ "${CHECK:-0}" = 1 ]; then
   L=(); ladd(){ L+=("$1|$2|$3"); }
   # vercel whoami 는 로그아웃이어도 종료 코드 0 → 글자로 판단
   if has vercel; then x=$(tlimit 25 vercel whoami 2>&1 | grep -v '^Vercel CLI' | tail -n1 | mask)
-    case "$x" in ""|*[Ll]ogged\ out*|*[Ll]og\ in*|*[Nn]o\ existing*|*[Ee]rror*|*credentials*) ladd Vercel "❌" "로그인 안 됨 → vercel login";; *) ladd Vercel "✅" "$x";; esac
+    case "$x" in ""|*[Ll]ogged\ out*|*[Ll]og\ in*|*[Nn]o\ existing*|*[Ee]rror*|*credentials*) ladd Vercel "-" "로그인 안 함(사전 설치에서는 안 해도 됨)";; *) ladd Vercel "✅" "$x";; esac
   else ladd Vercel "-" "vercel 없음"; fi
   if has gh; then if tlimit 20 gh auth status >/dev/null 2>&1; then ladd GitHub "✅" "$(tlimit 20 gh api user --jq .login 2>/dev/null)"; else ladd GitHub "-" "로그인 안 함(사전 설치에서는 안 해도 됨)"; fi; else ladd GitHub "-" "gh 없음"; fi
   if has git; then gn=$(git config --global user.name 2>/dev/null); ge=$(git config --global user.email 2>/dev/null)
@@ -490,12 +490,12 @@ if want 15; then begin 15 "작업 폴더 규칙(CLAUDE.md)"
 <!-- >>> nyc-ai-workshop 규칙 >>> (설치 스크립트가 넣음. 이 사이는 다시 돌리면 그대로 둔다) -->
 # 뉴욕 AI 워크숍 작업 폴더 규칙
 - 사용자는 컴퓨터 초보다. 처음부터 끝까지 한국어로, 쉬운 말로, 짧게 알려 준다.
-- 웹 화면은 Aside(MCP)로 한다. 로그인 주소(vercel login · claude 로그인 등)는 Safari 가 아니라 Aside 에서 연다. 힉스필드는 higgsfield auth login, 일레븐랩스는 무료 계정 API 키로 elevenlabs MCP 를 등록한다(키는 채팅에 쓰지 않고 클립보드로만).
+- 웹 화면은 Aside(MCP)로 한다. 로그인 주소(claude 로그인 등)는 Safari 가 아니라 Aside 에서 연다. 힉스필드는 higgsfield auth login, 일레븐랩스는 무료 계정 API 키로 elevenlabs MCP 를 등록한다(키는 채팅에 쓰지 않고 클립보드로만).
 - 터미널 명령은 사람에게 넘기지 말고 직접 실행한다(claude 는 ~/.local/bin/claude).
-- GitHub · Supabase 는 사전 설치에서 가입 · 로그인하지 않는다(CLI 만 깔려 있다).
-- 자동 클릭이 막힌 단추(Vercel Allow Access 같은 것)와 Aside 밖에 뜬 창은 computer use 전체 화면 제어로 마우스를 움직여 직접 누른다.
+- GitHub · Supabase · Vercel 은 사전 설치에서 가입 · 로그인하지 않는다(CLI 만 깔려 있다).
+- 자동 클릭이 막힌 단추와 Aside 밖에 뜬 창은 computer use 전체 화면 제어로 마우스를 움직여 직접 누른다.
 - 비밀번호 · 인증 코드 · 캡차 · 결제 화면은 손대지 않는다. 그 탭은 그대로 두고 다음으로 넘어간 뒤, 마지막에 「어느 탭에서 무엇을」 한 줄로 알려 준다.
-- vercel login 같은 로그인은 한 번만 시도한다(여러 번 하면 메일 인증 코드를 요구한다).
+- 로그인은 사이트마다 한 번만 시도한다(여러 번 하면 메일 인증 코드를 요구할 수 있다).
 - 맥 개발자 도구 · Homebrew · 관리자 비밀번호(sudo) · 소스 빌드를 쓰지 않는다. /usr/bin/git · /usr/bin/python3 는 부르지 않는다(개발자 도구 설치 창이 뜬다).
 - 생년월일 · 비밀번호 · API 키 같은 개인정보는 파일이나 채팅에 적지 않는다. 생년월일은 대화 안에서만 쓴다.
 - 설치 · 로그인 상태가 궁금하면 bash install-mac.sh --check 를 돌린다.

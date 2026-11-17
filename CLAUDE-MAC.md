@@ -29,7 +29,7 @@
 - 토큰과 API 키는 채팅에 쓰지 않는다. 클립보드나 파일로만 옮긴다.
 - 터미널 명령은 사람에게 넘기지 말고 **네가 직접 실행**한다(claude 는 `~/.local/bin/claude`).
 - 가입 · 로그인 웹 화면은 처음부터 Aside MCP(`aside repl`)로 다룬다. 로그인 주소는 Safari 가 아니라 Aside 탭에서 연다.
-- Aside 로 안 되는 화면이 나오면 그때만 computer use(전체 화면 제어)로 누른다: Aside 앱 설정 창, Aside 밖에 뜨는 창, 눌러도 반응이 없는 단추(GitHub Authorize, Vercel Allow Access 등). 누른 뒤에는 다시 Aside MCP 로 돌아간다.
+- Aside 로 안 되는 화면이 나오면 그때만 computer use(전체 화면 제어)로 누른다: Aside 앱 설정 창, Aside 밖에 뜨는 창, 눌러도 반응이 없는 단추. 누른 뒤에는 다시 Aside MCP 로 돌아간다.
 - 각 단계가 끝나면 ✅ 한 줄로 알리고 다음 단계로 간다.
 
 ### 1단계 설치 (약 5분)
@@ -62,11 +62,9 @@
 시작할 때 **생년월일을 한 번만** 묻고, 가입 화면에서 생년월일이나 나이를 물으면 그 값을 넣는다. 수강생은 만 18세 이상이니 나이 때문에 멈추지 않는다.
 1. **Aside 연결 확인:** Aside → Settings → Models 에 Claude 가 있는지 본다. 없으면 + Connect → Claude → Connect → Authorize 를 누른다.
 2. **가입:** Aside 에 로그인된 Gmail 로 한다. 약관은 수강생이 읽고 동의한 것으로 보고, 결제와 유료 요금제는 하지 않는다.
-   GitHub · Supabase 는 가입하지 않는다(CLI 는 설치 스크립트가 깔아 둔다. 수업에서 필요하면 그때 한다).
-   1. Vercel(`vercel.com/signup`, Hobby, Continue with Google)
-   2. 나머지는 Aside 새 탭에 한꺼번에 연다: 힉스필드 · 일레븐랩스 · 미드저니 · Suno · 캡컷(모두 구글로)
+   GitHub · Supabase · Vercel 은 가입하지 않는다(CLI 는 설치 스크립트가 깔아 둔다. 수업에서 필요하면 그때 한다).
+   1. 나머지는 Aside 새 탭에 한꺼번에 연다: 힉스필드 · 일레븐랩스 · 미드저니 · Suno · 캡컷(모두 구글로)
 3. **로그인**(각각 한 번만 시도한다. 주소는 Aside 에서 열고 허용 단추를 누른다)
-   - `vercel login`
    - git 이름 · 이메일: `git config --global user.name` / `user.email` 이 비어 있으면 Aside 에 로그인된 구글 계정의 이름과 Gmail 로 넣는다. `gh auth login` 은 하지 않는다.
    - claude 터미널판 로그인
    - 힉스필드: `higgsfield auth login`. 힉스필드 스킬(~/.claude/skills/higgsfield-*)은 이 CLI 를 쓴다.
@@ -75,7 +73,7 @@
 
 **⏸ 사람 차례 — Allow 창** 처음 다른 앱을 쓸 때 대화 안에 「Allow Claude to use 앱이름?」 이, 화면 전체를 쓸 때 「Take over the screen?」 이 뜬다. 사람에게 「대화 아래 주황색 'Needs your input' 이 보이면 **Allow for this session** 을 눌러 주세요」라고 미리 말해 둔다.
 
-**표 보여 주기:** `bash install-mac.sh --check` 결과 표를 보여 준다. 사이트마다 ✅ / ⏸ 로 사람이 할 일(어느 탭에서 무엇을)도 표로 보여 준다. ⏸ 가 있으면 끝날 때까지 사람을 이끈다: 할 일을 한 번에 하나씩, 어느 창에서 무엇을 누르고 넣을지 쉽게 말하고, 「다 했어」가 오면 확인한 뒤 다음 것으로 간다. 사람이 물으면 답한다. 이미 2단계 인증을 켠 계정, 캡차, Vercel 휴대폰 · 메일 인증이 여기에 해당한다. 한 번에 다 못 끝내도 괜찮다고 말하고, 남은 것을 목록으로 남긴다(수업에서 같이 한다).
+**표 보여 주기:** `bash install-mac.sh --check` 결과 표를 보여 준다. 사이트마다 ✅ / ⏸ 로 사람이 할 일(어느 탭에서 무엇을)도 표로 보여 준다. ⏸ 가 있으면 끝날 때까지 사람을 이끈다: 할 일을 한 번에 하나씩, 어느 창에서 무엇을 누르고 넣을지 쉽게 말하고, 「다 했어」가 오면 확인한 뒤 다음 것으로 간다. 사람이 물으면 답한다. 이미 2단계 인증을 켠 계정, 캡차, 메일 · 문자 인증 코드가 여기에 해당한다. 한 번에 다 못 끝내도 괜찮다고 말하고, 남은 것을 목록으로 남긴다(수업에서 같이 한다).
 
 **⏸ 사람 차례 — 휴대폰 (2단계가 도는 동안 해도 된다)** 아래 내용을 안내한다.
 - 휴대폰에 Claude 앱을 깔고 같은 구글 계정으로 로그인한다.
