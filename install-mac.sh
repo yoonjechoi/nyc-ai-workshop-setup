@@ -192,7 +192,7 @@ STEPS=(
   "1|pixi(미리 만든 프로그램 받는 도구)"
   "2|Git · GitHub CLI · ffmpeg · Node.js · Python"
   "3|Aside CLI"
-  "4|Vercel CLI"
+  "4|Vercel · Supabase CLI"
   "5|힉스필드 CLI"
   "6|Bun"
   "7|Claude Code 터미널판"
@@ -215,7 +215,7 @@ mask() { sed -E 's/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]+/<메일>/g'; }
 if [ "${CHECK:-0}" = 1 ]; then
   C=(); cadd(){ C+=("$1|$2|$3"); }
   st() { [ "$1" = "-" ] && echo "❌" || echo "✅"; }
-  for t in "git --version" "gh --version" "node --version" "python3 --version" "bun --version" "vercel --version" "higgsfield --version" "claude --version" "aside --version" "uv --version"; do
+  for t in "git --version" "gh --version" "node --version" "python3 --version" "bun --version" "vercel --version" "supabase --version" "higgsfield --version" "claude --version" "aside --version" "uv --version"; do
     set -- $t
     if has "$1"; then x=$(ver "$@"); x="${x:-있음}$(alt_note "$1")"; else x="-"; fi
     cadd "$1" "$(st "$x")" "$x"
@@ -232,7 +232,7 @@ if [ "${CHECK:-0}" = 1 ]; then
   if has vercel; then x=$(tlimit 25 vercel whoami 2>&1 | grep -v '^Vercel CLI' | tail -n1 | mask)
     case "$x" in ""|*[Ll]ogged\ out*|*[Ll]og\ in*|*[Nn]o\ existing*|*[Ee]rror*|*credentials*) ladd Vercel "❌" "로그인 안 됨 → vercel login";; *) ladd Vercel "✅" "$x";; esac
   else ladd Vercel "-" "vercel 없음"; fi
-  if has gh; then if tlimit 20 gh auth status >/dev/null 2>&1; then ladd GitHub "✅" "$(tlimit 20 gh api user --jq .login 2>/dev/null)"; else ladd GitHub "❌" "로그인 안 됨 → gh auth login"; fi; else ladd GitHub "-" "gh 없음"; fi
+  if has gh; then if tlimit 20 gh auth status >/dev/null 2>&1; then ladd GitHub "✅" "$(tlimit 20 gh api user --jq .login 2>/dev/null)"; else ladd GitHub "-" "로그인 안 함(사전 설치에서는 안 해도 됨)"; fi; else ladd GitHub "-" "gh 없음"; fi
   if has git; then gn=$(git config --global user.name 2>/dev/null); ge=$(git config --global user.email 2>/dev/null)
     [ -n "$gn" ] && [ -n "$ge" ] && ladd "git 이름 · 메일" "✅" "$gn · $(echo "$ge" | mask)" || ladd "git 이름 · 메일" "❌" "git config --global user.name / user.email"
   fi
@@ -370,13 +370,22 @@ if want 3; then begin 3 "Aside CLI"
   fi
 fi
 
-# ── 4. Vercel CLI
-if want 4; then begin 4 "Vercel CLI"
-  if has vercel; then skip x "$(ver vercel --version)"
-  elif ! npm_ready; then pass x "Node.js 가 없어서(2번 먼저)"
+# ── 4. Vercel CLI(npm) · Supabase CLI(공식 GitHub 릴리스의 미리 만든 파일 → ~/.local/bin). 가입 · 로그인은 하지 않는다
+if want 4; then begin 4 "Vercel · Supabase CLI"
+  if has vercel && has supabase; then skip x "vercel $(ver vercel --version) · supabase $(ver supabase --version)"
   else
-    logc npm install -g vercel
-    if has vercel; then ok x "" "$(ver vercel --version)" "$(took)"; else bad x "vercel 명령이 안 보임" "$(took)"; fi
+    if ! has vercel; then if npm_ready; then logc npm install -g vercel; fi; fi
+    if ! has supabase; then
+      sa=arm64; [ "$ARCH" = x86_64 ] && sa=amd64
+      st4=$(mktemp -d); mkdir -p "$HOME/.local/bin"
+      logc curl -fsSL --retry 2 -o "$st4/s.tgz" "https://github.com/supabase/cli/releases/latest/download/supabase_darwin_${sa}.tar.gz" \
+        && logc tar -xzf "$st4/s.tgz" -C "$st4" && [ -f "$st4/supabase" ] && mv -f "$st4/supabase" "$HOME/.local/bin/supabase" && chmod +x "$HOME/.local/bin/supabase"
+      rm -rf "$st4"
+    fi
+    v4=""; has vercel && v4="vercel $(ver vercel --version)"; s4=""; has supabase && s4="supabase $(ver supabase --version)"
+    if [ -n "$v4" ] && [ -n "$s4" ]; then ok x "" "$v4 · $s4" "$(took)"
+    elif [ -z "$v4" ] && ! npm_ready; then bad x "vercel: Node.js 가 없어서(2번 먼저)${s4:+ · $s4 됨}" "$(took)"
+    else m4="${v4:-vercel 명령이 안 보임}"; [ -n "$s4" ] && m4="$m4 · $s4" || m4="$m4 · supabase 명령이 안 보임"; bad x "$m4" "$(took)"; fi
   fi
 fi
 
@@ -481,9 +490,10 @@ if want 15; then begin 15 "작업 폴더 규칙(CLAUDE.md)"
 <!-- >>> nyc-ai-workshop 규칙 >>> (설치 스크립트가 넣음. 이 사이는 다시 돌리면 그대로 둔다) -->
 # 뉴욕 AI 워크숍 작업 폴더 규칙
 - 사용자는 컴퓨터 초보다. 처음부터 끝까지 한국어로, 쉬운 말로, 짧게 알려 준다.
-- 웹 화면은 Aside(MCP)로 한다. 로그인 주소(vercel login · gh auth login · claude 로그인 등)는 Safari 가 아니라 Aside 에서 연다. 힉스필드는 higgsfield auth login, 일레븐랩스는 무료 계정 API 키로 elevenlabs MCP 를 등록한다(키는 채팅에 쓰지 않고 클립보드로만).
+- 웹 화면은 Aside(MCP)로 한다. 로그인 주소(vercel login · claude 로그인 등)는 Safari 가 아니라 Aside 에서 연다. 힉스필드는 higgsfield auth login, 일레븐랩스는 무료 계정 API 키로 elevenlabs MCP 를 등록한다(키는 채팅에 쓰지 않고 클립보드로만).
 - 터미널 명령은 사람에게 넘기지 말고 직접 실행한다(claude 는 ~/.local/bin/claude).
-- 자동 클릭이 막힌 단추(GitHub Authorize, Vercel Allow Access 같은 것)와 Aside 밖에 뜬 창은 computer use 전체 화면 제어로 마우스를 움직여 직접 누른다.
+- GitHub · Supabase 는 사전 설치에서 가입 · 로그인하지 않는다(CLI 만 깔려 있다).
+- 자동 클릭이 막힌 단추(Vercel Allow Access 같은 것)와 Aside 밖에 뜬 창은 computer use 전체 화면 제어로 마우스를 움직여 직접 누른다.
 - 비밀번호 · 인증 코드 · 캡차 · 결제 화면은 손대지 않는다. 그 탭은 그대로 두고 다음으로 넘어간 뒤, 마지막에 「어느 탭에서 무엇을」 한 줄로 알려 준다.
 - vercel login 같은 로그인은 한 번만 시도한다(여러 번 하면 메일 인증 코드를 요구한다).
 - 맥 개발자 도구 · Homebrew · 관리자 비밀번호(sudo) · 소스 빌드를 쓰지 않는다. /usr/bin/git · /usr/bin/python3 는 부르지 않는다(개발자 도구 설치 창이 뜬다).
@@ -548,7 +558,7 @@ v() { has "$1" && ver "$@" || echo "-"; }
   echo ""
   echo "지금 쓸 수 있는 명령(버전):"
   echo "  git $(v git --version) · gh $(v gh --version) · ffmpeg $(has ffmpeg && ffmpeg -version 2>/dev/null | head -n1 | awk '{print $3}' || echo -) · node $(v node --version) · python3 $(v python3 --version)"
-  echo "  aside $(v aside --version) · vercel $(v vercel --version) · higgsfield $(v higgsfield --version) · bun $(v bun --version) · claude $(v claude --version)"
+  echo "  aside $(v aside --version) · vercel $(v vercel --version) · supabase $(v supabase --version) · higgsfield $(v higgsfield --version) · bun $(v bun --version) · claude $(v claude --version)"
   echo "  남은 용량: 시작 ${FREE0}GB → 지금 $(free_gb)GB"
   echo ""
   if [ "$FAILED" -eq 0 ]; then

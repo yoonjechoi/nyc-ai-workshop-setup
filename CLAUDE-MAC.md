@@ -62,13 +62,12 @@
 시작할 때 **생년월일을 한 번만** 묻고, 가입 화면에서 생년월일이나 나이를 물으면 그 값을 넣는다. 수강생은 만 18세 이상이니 나이 때문에 멈추지 않는다.
 1. **Aside 연결 확인:** Aside → Settings → Models 에 Claude 가 있는지 본다. 없으면 + Connect → Claude → Connect → Authorize 를 누른다.
 2. **가입:** Aside 에 로그인된 Gmail 로 한다. 약관은 수강생이 읽고 동의한 것으로 보고, 결제와 유료 요금제는 하지 않는다.
-   1. Supabase(`supabase.com/dashboard/sign-up`) → Continue with GitHub. GitHub 계정이 없으면 그 화면에서 구글로 GitHub 에 가입한 뒤 Authorize 를 누른다.
-      GitHub 가입 화면(github.com 의 Sign up, 사용자 이름, 확인 단계)은 Aside MCP 로만 한다. computer use 는 쓰지 않는다. 천천히 한다: 클릭이나 입력 하나 한 뒤 4.3초 기다렸다가 다음 동작을 한다. Aside 로 안 넘어가면 그 탭을 두고 사람에게 무엇을 누르면 되는지 한 줄로 알려 준다.
-   2. Vercel(`vercel.com/signup`, Hobby, Continue with Google)
-   3. 나머지는 Aside 새 탭에 한꺼번에 연다: 힉스필드 · 일레븐랩스 · 미드저니 · Suno · 캡컷(모두 구글로)
+   GitHub · Supabase 는 가입하지 않는다(CLI 는 설치 스크립트가 깔아 둔다. 수업에서 필요하면 그때 한다).
+   1. Vercel(`vercel.com/signup`, Hobby, Continue with Google)
+   2. 나머지는 Aside 새 탭에 한꺼번에 연다: 힉스필드 · 일레븐랩스 · 미드저니 · Suno · 캡컷(모두 구글로)
 3. **로그인**(각각 한 번만 시도한다. 주소는 Aside 에서 열고 허용 단추를 누른다)
    - `vercel login`
-   - `gh auth login`(git 이름 · 이메일을 GitHub 계정에 맞춘다)
+   - git 이름 · 이메일: `git config --global user.name` / `user.email` 이 비어 있으면 Aside 에 로그인된 구글 계정의 이름과 Gmail 로 넣는다. `gh auth login` 은 하지 않는다.
    - claude 터미널판 로그인
    - 힉스필드: `higgsfield auth login`. 힉스필드 스킬(~/.claude/skills/higgsfield-*)은 이 CLI 를 쓴다.
    - 일레븐랩스: Aside 에서 elevenlabs.io(무료 계정) → API Keys → 새 키 만들기. 키 값은 채팅 · 화면 캡처에 남기지 말고 복사(클립보드)만 한 뒤 `claude mcp add elevenlabs -s user -e ELEVENLABS_API_KEY="$(pbpaste)" -- uvx elevenlabs-mcp` 로 등록하고 `printf '' | pbcopy` 로 클립보드를 비운다.
