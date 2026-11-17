@@ -30,6 +30,7 @@
 - 터미널 명령은 사람에게 넘기지 말고 **네가 직접 실행**한다(claude 는 `~/.local/bin/claude`).
 - 가입 · 로그인 웹 화면은 처음부터 Aside MCP(`aside repl`)로 다룬다. 로그인 주소는 Safari 가 아니라 Aside 탭에서 연다.
 - Aside 로 안 되는 화면이 나오면 그때만 computer use(전체 화면 제어)로 누른다: Aside 앱 설정 창, Aside 밖에 뜨는 창, 눌러도 반응이 없는 단추. 누른 뒤에는 다시 Aside MCP 로 돌아간다.
+- 로그인 주소가 Aside 가 아닌 다른 브라우저(Safari 등)로 열리면, 그 창의 주소를 computer use 로 복사해(안 되면 `osascript -e 'tell application "Safari" to get URL of front document'` 로 읽어) Aside 에 새 탭으로 열고 Aside MCP 로 이어서 한다.
 - 각 단계가 끝나면 ✅ 한 줄로 알리고 다음 단계로 간다.
 
 ### 1단계 설치 (약 5분)
