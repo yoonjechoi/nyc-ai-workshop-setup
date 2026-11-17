@@ -249,7 +249,7 @@ if [ "${CHECK:-0}" = 1 ]; then
   else ladd "Aside 로그인" "-" "aside 없음"; fi
   if has claude; then
     tlimit 20 claude mcp get aside >/dev/null 2>&1 && ladd "Aside MCP" "✅" "Claude 에 연결됨" || ladd "Aside MCP" "❌" "bash install-mac.sh --only 8"
-    tlimit 20 claude mcp get elevenlabs >/dev/null 2>&1 && ladd "ElevenLabs" "✅" "MCP 로 연결됨" || ladd "ElevenLabs" "⏸" "MCP 없음 → 무료 계정 API 키로 claude mcp add elevenlabs(문장 ② 3-⑤)"
+    tlimit 20 claude mcp get elevenlabs >/dev/null 2>&1 && ladd "ElevenLabs" "✅" "MCP 로 연결됨" || ladd "ElevenLabs" "⏸" "MCP 없음 → 무료 계정 API 키로 claude mcp add elevenlabs(프롬프트 2 의 로그인 ④)"
   fi
   {
     echo ""
@@ -567,7 +567,7 @@ v() { has "$1" && ver "$@" || echo "-"; }
     echo "❌ 실패 ${FAILED}개. 자세한 기록: $LOG"
     echo "   고친 뒤 실패한 번호만 다시:  bash $0 --only <번호>"
   fi
-  echo "다음: Claude 앱은 끄지 마세요. Aside 로그인을 마친 뒤, 가입 · 로그인(문장 ②)은 Claude 앱 왼쪽 위 New 로 연 새 대화(폴더 nyc-ai-workshop)에서 하세요. 새 대화에서 새로 깐 Aside 도구가 보입니다."
+  echo "다음: Claude 앱은 끄지 마세요. Aside 로그인을 마친 뒤, 가입 · 로그인(프롬프트 2)은 Claude 앱 왼쪽 위 New 로 연 새 대화(폴더 nyc-ai-workshop)에서 하세요. 새 대화에서 새로 깐 Aside 도구가 보입니다."
   echo "설치 · 로그인 상태는 언제든:  bash install-mac.sh --check"
   app_installed CapCut.app && echo "캡컷은 응용 프로그램 폴더에서 직접 한 번 열어 보세요(처음 열 때 약관 동의 창이 나옵니다)."
 } | tee "$RESULT" | tee -a "$LOG"
