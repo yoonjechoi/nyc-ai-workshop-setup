@@ -63,6 +63,7 @@
 1. **Aside 연결 확인:** Aside → Settings → Models 에 Claude 가 있는지 본다. 없으면 + Connect → Claude → Connect → Authorize 를 누른다.
 2. **가입:** Aside 에 로그인된 Gmail 로 한다. 약관은 수강생이 읽고 동의한 것으로 보고, 결제와 유료 요금제는 하지 않는다.
    GitHub · Supabase · Vercel 은 가입하지 않는다(CLI 는 설치 스크립트가 깔아 둔다. 수업에서 필요하면 그때 한다).
+   힉스필드 MCP(`https://mcp.higgsfield.ai/mcp`)는 사전 설치에서 연결하지 않는다. 로그인 창이 기본 브라우저(Safari)로 열려 다른 구글 계정과 연결될 수 있어서, 수업에서 강사와 같이 계정을 확인하며 연결한다. 사전 설치에서는 `higgsfield auth login`(CLI)까지만 한다.
    1. 나머지는 Aside 새 탭에 한꺼번에 연다: 힉스필드 · 일레븐랩스 · 미드저니 · Suno · 캡컷(모두 구글로)
 3. **로그인**(각각 한 번만 시도한다. 주소는 Aside 에서 열고 허용 단추를 누른다)
    - git 이름 · 이메일: `git config --global user.name` / `user.email` 이 비어 있으면 Aside 에 로그인된 구글 계정의 이름과 Gmail 로 넣는다. `gh auth login` 은 하지 않는다.
