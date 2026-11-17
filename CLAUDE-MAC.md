@@ -11,7 +11,7 @@
 1. claude.ai/download 에서 Claude 앱을 설치하고, 구글 계정으로 로그인합니다(Pro 이상).
 2. 설정 → Claude Code 에서 **권한 무시(bypass permissions)** 를 켭니다.
 3. 설정 → **Capabilities → Computer use** 를 켭니다(Turn on).
-   - 「Grant macOS permissions」 창에서 Accessibility · Screen recording 의 **Request** 를 누르고, 시스템 설정 스위치를 켠 뒤 맥 비밀번호를 넣습니다. 「Quit & Reopen」이 나오면 **Reopen** 을 누릅니다.
+   - 「Grant macOS permissions」 창에서 Accessibility · Screen recording 의 **Request** 를 누르고, System Settings → Privacy & Security 의 Accessibility, Screen & System Audio Recording 에서 Claude 스위치를 켠 뒤 맥 비밀번호를 넣습니다. 「Quit & Reopen」이 나오면 **Reopen** 을 누릅니다.
 4. Code 탭에서 폴더 `~/workspace/nyc-ai-workshop` 를 만들어 고르고, Trust 를 누른 뒤 모드를 **Bypass permissions** 로 바꿉니다.
 5. 이 대화에 위의 한 줄을 보냅니다.
 
