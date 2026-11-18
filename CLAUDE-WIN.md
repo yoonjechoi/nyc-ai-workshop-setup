@@ -33,7 +33,7 @@
 - 가입 · 로그인 웹 화면은 처음부터 Aside MCP(`aside repl`)로 다룬다. 로그인 주소는 엣지가 아니라 Aside 탭에서 연다.
 - Aside 로 안 되는 화면이 나오면 그때만 computer use(전체 화면 제어)로 누른다: Aside 앱 설정 창, Aside 밖에 뜨는 창, 눌러도 반응이 없는 단추. 누른 뒤에는 다시 Aside MCP 로 돌아간다.
 - 로그인 주소가 Aside 가 아닌 다른 브라우저(엣지 등)로 열리면, 그 창의 주소창을 computer use 로 복사해 Aside 에 새 탭으로 열고 Aside MCP 로 이어서 한다.
-- 「이 링크를 열 앱을 고르세요」 창이 뜨면 **Aside → 한 번만(Just once)** 을 고른다. 「항상」은 고르지 않는다(기본 브라우저는 바꾸지 않는다).
+- 「Select an app to open this …」(이 파일 · 링크를 열 앱 고르기) 창이 뜨면 맨 위 **Microsoft Edge 그대로 → 한 번만(Just once)** 을 고른다. Aside 나 「항상(Always)」은 고르지 않는다(기본 앱은 바꾸지 않는다).
 - 각 단계가 끝나면 ✅ 한 줄로 알리고 다음 단계로 간다.
 
 ### 1단계 설치 (약 17분)
@@ -50,7 +50,7 @@
 **⏸ 사람 차례 — Aside 로그인 (약 3분)** 아래 내용을 그대로 안내하고 「했어」를 기다린다.
 - 설치 때 열린 Aside 창(작업 표시줄에서 깜빡이면 눌러서 열기, 없으면 시작 메뉴에서 `Aside`) → **Sign in with Google** 로 로그인한다. 이어지는 첫 안내 화면에서는 이렇게 고른다.
   - 다른 브라우저에서 가져오기: **Cancel**
-  - 볼트 비밀번호를 정하고, **복구 암호는 종이에 적는다**(Claude 에게 주지 않기)
+  - 볼트 비밀번호를 정하고, **복구 암호는 안전한 다른 곳에 따로 저장한다**(둘 다 Claude 에게 주지 않기)
   - Choose your AI subscription: **Claude → Connect → Authorize** (꼭 하기). Claude 로그인 창에서는 **Claude 앱과 같은 Pro 이상 구글 계정**을 고른다(다른 계정이면 「Pro, Max 또는 Ultra 가 필요합니다」로 연결이 안 된다). 로봇 확인(그림 맞추기)이 나오면 직접 푼다.
   - Let your agents browse: **Skip**
   - Get started. 그다음 윈도우 「기본 앱」 설정 화면이 열리면 **아무것도 바꾸지 말고 닫는다**.
